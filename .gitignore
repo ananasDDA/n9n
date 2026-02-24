@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+flow-app/node_modules/
+
+# Build / dist
+dist/
+flow-app/dist/
+build/
+*.egg-info/
+.eggs/
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.pyo
+.Python
+*.so
+.pytest_cache/
+.mypy_cache/
+
+# Env (не коммитить ключи)
+.env
+backend/.env
+
+# IDE / OS
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Logs / cache
+*.log
+npm-debug.log*
+.cache/
+coverage/

@@ -1,0 +1,2368 @@
+% ============================================================
+%  Проект ИТ-архитектуры ГК «Самолет» — Отчёт
+%  Компиляция: xelatex main.tex (2 прохода)
+% ============================================================
+\documentclass[12pt,a4paper]{article}
+
+% --- Шрифты и язык ---
+\usepackage{fontspec}
+\usepackage{polyglossia}
+\setdefaultlanguage{russian}
+\setotherlanguage{english}
+\defaultfontfeatures{Ligatures=TeX}
+\setmainfont{PT Serif}
+\setsansfont{PT Sans}
+\setmonofont{PT Mono}
+\newfontfamily\cyrillicfont{PT Serif}
+\newfontfamily\cyrillicfontsf{PT Sans}
+\newfontfamily\cyrillicfonttt{PT Mono}
+
+% --- Межстрочный интервал ---
+\usepackage{setspace}
+\onehalfspacing
+
+% --- Геометрия страницы ---
+\usepackage[left=25mm, right=15mm, top=20mm, bottom=20mm, headheight=14pt]{geometry}
+
+% --- Графика и диаграммы ---
+\usepackage{tikz}
+\usetikzlibrary{
+  shapes.geometric, shapes.multipart, shapes.arrows,
+  arrows.meta, positioning, calc, fit, backgrounds,
+  decorations.pathreplacing, decorations.markings,
+  matrix, trees, patterns, shadows.blur
+}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage{pgfgantt}
+
+% --- Таблицы ---
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{colortbl}
+
+% --- Оформление ---
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{indentfirst}
+
+% --- Цветовая палитра ---
+\definecolor{samoletblue}{RGB}{0,102,178}
+\definecolor{samoletdark}{RGB}{30,55,90}
+\definecolor{samoletlight}{RGB}{200,220,245}
+\definecolor{accentgreen}{RGB}{46,139,87}
+\definecolor{accentorange}{RGB}{230,126,34}
+\definecolor{accentred}{RGB}{192,57,43}
+\definecolor{accentteal}{RGB}{22,160,133}
+\definecolor{accentpurple}{RGB}{142,68,173}
+\definecolor{lightgray}{RGB}{240,240,240}
+\definecolor{bpmnblue}{RGB}{210,230,250}
+\definecolor{bpmnyellow}{RGB}{255,243,200}
+\definecolor{bpmngreen}{RGB}{210,245,210}
+\definecolor{bpmnred}{RGB}{250,215,215}
+\definecolor{layerbiz}{RGB}{255,245,200}
+\definecolor{layerapp}{RGB}{200,225,255}
+\definecolor{layerdata}{RGB}{210,250,210}
+\definecolor{layerinfra}{RGB}{230,230,230}
+
+% --- Стили заголовков ---
+\titleformat{\section}{\Large\bfseries\color{samoletblue}}{\thesection.}{0.5em}{}[\vspace{2pt}\titlerule]
+\titleformat{\subsection}{\large\bfseries\color{samoletdark}}{\thesubsection.}{0.5em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries}{\thesubsubsection.}{0.5em}{}
+
+% --- Колонтитулы ---
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\itshape ГК «Самолет» --- Проект ИТ-архитектуры}
+\fancyhead[R]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% --- Гиперссылки ---
+\hypersetup{
+  colorlinks=true,
+  linkcolor=samoletblue,
+  urlcolor=samoletblue,
+  citecolor=samoletblue,
+  bookmarks=true
+}
+
+% --- Общие TikZ-стили ---
+\tikzset{
+  base node/.style={
+    rectangle, rounded corners=3pt, draw=gray!60,
+    minimum height=10mm, text width=28mm, align=center,
+    font=\small\sffamily, inner sep=4pt
+  },
+  bpmn start/.style={circle, draw=accentgreen, fill=bpmngreen, line width=1.2pt, minimum size=9mm},
+  bpmn end/.style={circle, draw=accentred, fill=bpmnred, line width=2pt, minimum size=9mm},
+  bpmn task/.style={
+    rectangle, rounded corners=4pt, draw=samoletblue, fill=bpmnblue,
+    minimum height=12mm, text width=24mm, align=center, font=\small\sffamily
+  },
+  bpmn gateway/.style={
+    diamond, draw=accentorange, fill=bpmnyellow,
+    minimum size=10mm, inner sep=0pt, font=\scriptsize\bfseries
+  },
+  flow arrow/.style={-{Stealth[length=3mm, width=2mm]}, thick, color=samoletdark},
+  dashed arrow/.style={-{Stealth[length=3mm, width=2mm]}, thick, dashed, color=gray!70},
+  layer box/.style={
+    rectangle, rounded corners=2pt, draw=#1!60, fill=#1!15,
+    minimum height=10mm, text width=26mm, align=center, font=\small\sffamily
+  }
+}
+
+\begin{document}
+
+% ============================================================
+%  ТИТУЛЬНАЯ СТРАНИЦА
+% ============================================================
+\begin{titlepage}
+\thispagestyle{empty}
+\begin{center}
+
+\vspace*{10mm}
+{\large\textsc{Министерство науки и высшего образования Российской Федерации}}
+
+\vspace{5mm}
+{\large Университет}
+
+\vspace{5mm}
+{\normalsize Кафедра информационных технологий и систем управления}
+
+\vspace{30mm}
+{\Huge\bfseries\color{samoletblue} Проект ИТ-архитектуры\\[6pt] предприятия}
+
+\vspace{10mm}
+{\LARGE\color{samoletdark} ГК «Самолет»}
+
+\vspace{8mm}
+{\large Анализ, трансформация и план изменений\\
+корпоративной ИТ-архитектуры}
+
+\vspace{25mm}
+
+\begin{minipage}{0.45\textwidth}
+\begin{flushleft}
+{\normalsize \textbf{Выполнили:}\\
+Студенты группы БИ07\\[4pt]
+Дорохов~Д.\,А.\\
+Николаева~М.\,А.}
+\end{flushleft}
+\end{minipage}
+\hfill
+\begin{minipage}{0.45\textwidth}
+\begin{flushright}
+{\normalsize \textbf{Руководитель:}\\[4pt]
+к.\,т.\,н., доцент\\
+Преподаватель~А.\,Б.}
+\end{flushright}
+\end{minipage}
+
+\vfill
+{\large Москва --- 2026}
+
+\end{center}
+\end{titlepage}
+
+% ============================================================
+%  ОГЛАВЛЕНИЕ
+% ============================================================
+\pagenumbering{roman}
+\tableofcontents
+\newpage
+\pagenumbering{arabic}
+\setcounter{page}{3}
+
+% ============================================================
+%  РАЗДЕЛ 1. КРАТКАЯ ХАРАКТЕРИСТИКА КОМПАНИИ
+% ============================================================
+\section{Краткая характеристика компании}
+
+\subsection{Положение компании на рынке}
+
+Группа компаний «Самолет» --- один из крупнейших российских девелоперов жилой недвижимости, входящий в тройку лидеров по объёмам текущего строительства. Компания основана в 2012 году и за десятилетие выросла в публичный холдинг, торгующийся на Московской бирже (тикер SMLT). По состоянию на начало 2026 года портфель проектов компании превышает 25~млн~кв.\,м, а география присутствия охватывает Москву, Московскую область, Санкт-Петербург, Ленинградскую область и ряд регионов России.
+
+Компания занимает лидирующие позиции в сегменте доступного жилья комфорт-класса, делая ставку на масштабные проекты комплексного освоения территорий. К ключевым проектам относятся жилые комплексы «Алхимово», «Горки Парк», «Новое Внуково», «Люберцы» и другие. В 2025 году компания ввела в эксплуатацию более 2,8~млн~кв.\,м жилья, а в 2026 году планирует ввести не менее 1,9~млн~кв.\,м.
+
+Однако в 2026 году компания столкнулась с глубоким финансовым кризисом, который перерос в публичный скандал из-за просьбы о государственной поддержке на сумму 50~млрд~рублей и нарастающих проблем с дольщиками.
+
+\subsection{PESTLE-анализ}
+
+Для оценки влияния внешней среды на деятельность ГК «Самолет» проведён PESTLE-анализ, результаты которого представлены на рисунке~\ref{fig:pestle}.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  pbox/.style={
+    rectangle, rounded corners=6pt, draw=#1!70, fill=#1!12,
+    minimum width=70mm, minimum height=42mm, anchor=north west,
+    font=\small
+  },
+  plabel/.style={
+    font=\bfseries\sffamily\small, color=#1!80
+  }
+]
+% Row 1
+\node[pbox=samoletblue] (P) at (0, 0) {};
+\node[plabel=samoletblue, anchor=north west] at ([shift={(4pt,-4pt)}]P.north west) {Political};
+\node[text width=62mm, font=\scriptsize, anchor=north west] at ([shift={(4pt,-18pt)}]P.north west) {
+  $\bullet$ Государственная поддержка отрасли\\
+  $\bullet$ Давление Генпрокуратуры (изъятие активов)\\
+  $\bullet$ Ослабление позиций покровителей\\
+  $\bullet$ Регулирование долевого строительства
+};
+
+\node[pbox=accentgreen] (E) at (78mm, 0) {};
+\node[plabel=accentgreen, anchor=north west] at ([shift={(4pt,-4pt)}]E.north west) {Economic};
+\node[text width=62mm, font=\scriptsize, anchor=north west] at ([shift={(4pt,-18pt)}]E.north west) {
+  $\bullet$ Ключевая ставка ЦБ РФ 21\%\\
+  $\bullet$ Сокращение программ льготной ипотеки\\
+  $\bullet$ Падение спроса на жильё на 30--40\%\\
+  $\bullet$ Рост себестоимости строительства
+};
+
+% Row 2
+\node[pbox=accentorange] (S) at (0, -48mm) {};
+\node[plabel=accentorange, anchor=north west] at ([shift={(4pt,-4pt)}]S.north west) {Social};
+\node[text width=62mm, font=\scriptsize, anchor=north west] at ([shift={(4pt,-18pt)}]S.north west) {
+  $\bullet$ Снижение платёжеспособности населения\\
+  $\bullet$ Рост недоверия к застройщикам\\
+  $\bullet$ Иски дольщиков (задержки сдачи)\\
+  $\bullet$ Кадровый дефицит на стройплощадках
+};
+
+\node[pbox=accentpurple] (T) at (78mm, -48mm) {};
+\node[plabel=accentpurple, anchor=north west] at ([shift={(4pt,-4pt)}]T.north west) {Technological};
+\node[text width=62mm, font=\scriptsize, anchor=north west] at ([shift={(4pt,-18pt)}]T.north west) {
+  $\bullet$ Цифровизация стройконтроля (BIM, IoT)\\
+  $\bullet$ ИИ для аналитики и прогнозирования\\
+  $\bullet$ Импортозамещение ПО (Hitachi $\to$ отеч.)\\
+  $\bullet$ Фрагментация 25+ ИТ-систем
+};
+
+% Row 3
+\node[pbox=accentred] (L) at (0, -96mm) {};
+\node[plabel=accentred, anchor=north west] at ([shift={(4pt,-4pt)}]L.north west) {Legal};
+\node[text width=62mm, font=\scriptsize, anchor=north west] at ([shift={(4pt,-18pt)}]L.north west) {
+  $\bullet$ 214-ФЗ о долевом строительстве\\
+  $\bullet$ Иски Генпрокуратуры к активам\\
+  $\bullet$ Расследования (мошенничество)\\
+  $\bullet$ Ужесточение контроля эскроу-счетов
+};
+
+\node[pbox=accentteal] (En) at (78mm, -96mm) {};
+\node[plabel=accentteal, anchor=north west] at ([shift={(4pt,-4pt)}]En.north west) {Environmental};
+\node[text width=62mm, font=\scriptsize, anchor=north west] at ([shift={(4pt,-18pt)}]En.north west) {
+  $\bullet$ Требования к энергоэффективности\\
+  $\bullet$ Стандарты «зелёного» строительства\\
+  $\bullet$ Экологическая экспертиза проектов\\
+  $\bullet$ Переработка строительных отходов
+};
+
+\end{tikzpicture}
+\caption{PESTLE-анализ внешней среды ГК «Самолет»}
+\label{fig:pestle}
+\end{figure}
+
+Наиболее значимыми факторами являются экономические (высокая ключевая ставка и падение спроса) и политические (изъятие активов по иску Генпрокуратуры), которые в совокупности определяют текущий кризис компании.
+
+В политическом измерении компания испытывает давление как со стороны государственных органов (Генпрокуратура, Росимущество), так и через изменение баланса сил среди бенефициаров. Ослабление позиций ряда покровителей привело к переделу активов и усилению давления конкурентов. Экономические факторы усугубляются тем, что при ключевой ставке 21\% стоимость обслуживания долга резко возрастает, а сокращение программ льготной ипотеки напрямую снижает продажи.
+
+Технологические факторы создают как вызовы (необходимость импортозамещения ПО, миграция с иностранных платформ), так и возможности --- цифровизация стройконтроля через BIM-технологии и ИИ может стать конкурентным преимуществом при правильной стратегии. Правовые риски связаны с ужесточением контроля за эскроу-счетами и потенциальными исками по задержкам сдачи объектов.
+
+\subsection{SWOT-анализ}
+
+Результаты SWOT-анализа обобщают внутренние сильные и слабые стороны компании, а также внешние возможности и угрозы (рисунок~\ref{fig:swot}).
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  qbox/.style={
+    rectangle, rounded corners=4pt, draw=#1!60, fill=#1!8,
+    minimum width=72mm, minimum height=50mm, anchor=center
+  },
+  qlabel/.style={font=\large\bfseries\sffamily, color=#1!80}
+]
+% Quadrants
+\node[qbox=accentgreen] (str) at (-39mm, 28mm) {};
+\node[qbox=accentred] (weak) at (39mm, 28mm) {};
+\node[qbox=samoletblue] (opp) at (-39mm, -28mm) {};
+\node[qbox=accentorange] (thr) at (39mm, -28mm) {};
+
+% Labels
+\node[qlabel=accentgreen] at ([yshift=-4mm]str.north) {Сильные стороны (S)};
+\node[text width=62mm, font=\scriptsize, anchor=north] at ([yshift=-14mm]str.north) {
+  $\bullet$ Лидер рынка (топ-3 по объёмам)\\
+  $\bullet$ Платформа 10D и единый ИТ-блок\\
+  $\bullet$ Метрокластер 99,95\% доступности\\
+  $\bullet$ 2,4~ПБ консолидированных данных\\
+  $\bullet$ Диверсификация по регионам
+};
+
+\node[qlabel=accentred] at ([yshift=-4mm]weak.north) {Слабые стороны (W)};
+\node[text width=62mm, font=\scriptsize, anchor=north] at ([yshift=-14mm]weak.north) {
+  $\bullet$ 25+ фрагментированных интеграций\\
+  $\bullet$ Высокая долговая нагрузка\\
+  $\bullet$ Зависимость от 2--3 бенефициаров\\
+  $\bullet$ Ручной ввод на стройплощадках\\
+  $\bullet$ Слабая мобильная интеграция
+};
+
+\node[qlabel=samoletblue] at ([yshift=-4mm]opp.north) {Возможности (O)};
+\node[text width=62mm, font=\scriptsize, anchor=north] at ([yshift=-14mm]opp.north) {
+  $\bullet$ ИИ для стройконтроля и закупок\\
+  $\bullet$ Сокращение рутины на 30--40\%\\
+  $\bullet$ Государственная поддержка (50 млрд)\\
+  $\bullet$ Консолидация рынка\\
+  $\bullet$ Мобильные решения для линейки
+};
+
+\node[qlabel=accentorange] at ([yshift=-4mm]thr.north) {Угрозы (T)};
+\node[text width=62mm, font=\scriptsize, anchor=north] at ([yshift=-14mm]thr.north) {
+  $\bullet$ Банкротство при отказе в господдержке\\
+  $\bullet$ Дальнейшее изъятие активов\\
+  $\bullet$ Массовые иски дольщиков\\
+  $\bullet$ Уход ключевых кадров\\
+  $\bullet$ Давление конкурентов (ПИК, ЛСР)
+};
+
+% Center labels
+\node[font=\footnotesize\sffamily\bfseries, fill=white, inner sep=2pt] at (0, 53mm) {Внутренние факторы};
+\node[font=\footnotesize\sffamily\bfseries, fill=white, inner sep=2pt, rotate=90] at (-76mm, 0) {Положительные};
+\node[font=\footnotesize\sffamily\bfseries, fill=white, inner sep=2pt, rotate=90] at (76mm, 0) {Отрицательные};
+\node[font=\footnotesize\sffamily\bfseries, fill=white, inner sep=2pt] at (0, -53mm) {Внешние факторы};
+
+\end{tikzpicture}
+\caption{SWOT-анализ ГК «Самолет»}
+\label{fig:swot}
+\end{figure}
+
+\subsection{Финансовые показатели}
+
+Финансовое состояние компании характеризуется стремительным ростом выручки в 2021--2024 годах при одновременном наращивании долговой нагрузки. В 2025--2026 годах произошло резкое ухудшение показателей из-за кризиса ликвидности.
+
+\begin{table}[H]
+\centering
+\caption{Ключевые финансовые показатели ГК «Самолет», млрд~руб.}
+\label{tab:finance}
+\begin{tabular}{lrrrrr}
+\toprule
+\textbf{Показатель} & \textbf{2022} & \textbf{2023} & \textbf{2024} & \textbf{2025} & \textbf{2026 (план)} \\
+\midrule
+Выручка & 246 & 266 & 310 & 285 & 240 \\
+EBITDA & 78 & 82 & 90 & 62 & 45 \\
+Чистая прибыль & 22 & 24 & 18 & $-5$ & $-15$ \\
+Чистый долг & 180 & 220 & 290 & 350 & 380 \\
+Долг/EBITDA & 2,3 & 2,7 & 3,2 & 5,6 & 8,4 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  ybar,
+  width=140mm,
+  height=70mm,
+  bar width=8pt,
+  ylabel={млрд руб.},
+  symbolic x coords={2022, 2023, 2024, 2025, 2026},
+  xtick=data,
+  ymin=0, ymax=420,
+  legend style={at={(0.5,-0.20)}, anchor=north, legend columns=2, font=\small},
+  nodes near coords,
+  nodes near coords style={font=\tiny},
+  every axis plot/.append style={fill opacity=0.85}
+]
+\addplot[fill=samoletblue] coordinates {(2022,246) (2023,266) (2024,310) (2025,285) (2026,240)};
+\addplot[fill=accentred!80] coordinates {(2022,180) (2023,220) (2024,290) (2025,350) (2026,380)};
+\legend{Выручка, Чистый долг}
+\end{axis}
+\end{tikzpicture}
+\caption{Динамика выручки и чистого долга ГК «Самолет»}
+\label{fig:finance_chart}
+\end{figure}
+
+Как видно из представленных данных, начиная с 2024 года чистый долг компании превысил годовую выручку, а коэффициент Долг/EBITDA вырос до критических значений. В феврале 2026 года акции компании просели более чем на 8\%, что стало следствием обращения за льготным кредитом в размере 50~млрд~рублей к Председателю Правительства М.\,В.~Мишустину.
+
+Ключевой удар по компании нанесла передача ЖК «Квартал Марьино» в Новой Москве в Росимущество по иску Генпрокуратуры, связанному с активами латвийского Rietumu Banka. Также на ситуацию повлияла смерть сооснователя Михаила Кенина в 2025 году и последовавшая неопределённость в структуре собственности.
+
+\subsection{Анализ конкурентной среды}
+
+ГК «Самолет» конкурирует с крупнейшими девелоперами России: ПИК (лидер по объёмам ввода), ЛСР, «Эталон», «А101». В условиях кризиса конкуренты активно используют ослабление позиций «Самолета» для перехвата земельных участков и покупателей.
+
+\begin{table}[H]
+\centering
+\caption{Сравнительный анализ крупнейших девелоперов России (2025)}
+\label{tab:competitors}
+\small
+\begin{tabularx}{\textwidth}{|l|X|r|r|r|}
+\hline
+\rowcolor{samoletlight}
+\textbf{Компания} & \textbf{Фокус} & \textbf{Ввод, млн кв.м} & \textbf{Выручка, млрд} & \textbf{Долг/EBITDA} \\
+\hline
+ПИК & Комфорт-класс, Москва & 3,2 & 420 & 1,8 \\
+\hline
+ГК «Самолет» & Комфорт, масс-маркет & 2,8 & 285 & 5,6 \\
+\hline
+ЛСР & Комфорт/бизнес, СПб & 1,4 & 180 & 2,1 \\
+\hline
+«Эталон» & Комфорт/бизнес & 0,9 & 95 & 2,5 \\
+\hline
+«А101» & Комфорт, новая Москва & 0,7 & 70 & 1,5 \\
+\hline
+\end{tabularx}
+\end{table}
+
+Как видно из таблицы, ГК «Самолет» при сопоставимых объёмах строительства с ПИК имеет значительно более высокую долговую нагрузку (Долг/EBITDA 5,6 против 1,8), что существенно ограничивает операционную гибкость и инвестиционные возможности компании.
+
+\newpage
+
+% ============================================================
+%  РАЗДЕЛ 2. ОРГАНИЗАЦИОННАЯ СТРУКТУРА
+% ============================================================
+\section{Организационная структура компании}
+
+\subsection{Структура управления}
+
+ГК «Самолет» имеет холдинговую структуру с централизованным управлением, разделённую на ключевые дивизионы. Генеральным директором с ноября 2024 года является Анна Акиньшина (третья смена руководства за 2024 год). Совет директоров курирует стратегию, ИТ-блок возглавляет Алексей Семёнов, осуществляя централизацию всех цифровых инициатив через платформу 10D.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  org/.style={
+    rectangle, rounded corners=4pt, draw=samoletblue!70, fill=samoletlight,
+    minimum height=10mm, minimum width=32mm, align=center, font=\small\sffamily
+  },
+  org top/.style={org, fill=samoletblue!25, draw=samoletblue, font=\small\sffamily\bfseries},
+  org mid/.style={org, fill=samoletblue!12},
+  level distance=18mm,
+  sibling distance=38mm,
+  edge from parent/.style={draw=samoletblue!60, thick, -{Stealth[length=2.5mm]}}
+]
+\node[org top] (board) {Совет директоров}
+  child { node[org top] (ceo) {Генеральный директор\\[-1pt]{\scriptsize Акиньшина А.}}
+    child { node[org mid] (dev) {Девелопмент\\[-1pt]{\scriptsize МО, СПб, регионы}} }
+    child { node[org mid] (srv) {Сервис\\[-1pt]{\scriptsize «Самолет Плюс»}} }
+    child { node[org mid] (it) {ИТ/Цифровизация\\[-1pt]{\scriptsize Семёнов А.}} }
+    child { node[org mid] (fin) {Финансы/Юр.\\[-1pt]{\scriptsize 9 юнитов}} }
+  };
+
+\node[org, below=10mm of dev, font=\scriptsize\sffamily, minimum width=28mm, text width=26mm] (d1) {ЖК в МО\\5+ млн кв.м};
+\node[org, below=10mm of srv, font=\scriptsize\sffamily, minimum width=28mm, text width=26mm] (s1) {Rerooms\\Гарантия};
+\node[org, below=10mm of it, font=\scriptsize\sffamily, minimum width=28mm, text width=26mm] (i1) {10D, ТУРБО ERP\\ЦОД (2,4 ПБ)};
+\node[org, below=10mm of fin, font=\scriptsize\sffamily, minimum width=28mm, text width=26mm] (f1) {Бухгалтерия\\Юр. отдел};
+
+\draw[flow arrow, samoletblue!50] (dev) -- (d1);
+\draw[flow arrow, samoletblue!50] (srv) -- (s1);
+\draw[flow arrow, samoletblue!50] (it) -- (i1);
+\draw[flow arrow, samoletblue!50] (fin) -- (f1);
+
+\end{tikzpicture}
+\caption{Организационная структура ГК «Самолет»}
+\label{fig:orgchart}
+\end{figure}
+
+\subsection{Структура акционеров}
+
+Акционерная структура компании характеризуется концентрацией контроля у нескольких ключевых лиц, что создаёт дополнительные управленческие риски в условиях кризиса.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+\def\radius{3.2}
+% Slice data: start angle, end angle, color, label, percent
+% Голубков: 36% = 129.6°
+% Кенин (наследники): 33% = 118.8°
+% Евтушевский: 8% = 28.8°
+% Free-float: 23% = 82.8°
+
+\fill[samoletblue!65, draw=white, line width=1.5pt] (0,0) -- (90:\radius) arc (90:90-129.6:\radius) -- cycle;
+\fill[accentteal!65, draw=white, line width=1.5pt] (0,0) -- (90-129.6:\radius) arc (90-129.6:90-129.6-118.8:\radius) -- cycle;
+\fill[accentorange!70, draw=white, line width=1.5pt] (0,0) -- (90-248.4:\radius) arc (90-248.4:90-248.4-28.8:\radius) -- cycle;
+\fill[gray!45, draw=white, line width=1.5pt] (0,0) -- (90-277.2:\radius) arc (90-277.2:90-360:\radius) -- cycle;
+
+% Labels
+\node[font=\small\sffamily\bfseries, text=white] at (90-64.8:2.1) {36\%};
+\node[font=\small\sffamily\bfseries, text=white] at (90-129.6-59.4:2.1) {33\%};
+\node[font=\small\sffamily\bfseries, text=white] at (90-248.4-14.4:2.0) {8\%};
+\node[font=\small\sffamily\bfseries] at (90-277.2-41.4:2.1) {23\%};
+
+% External labels
+\node[font=\small\sffamily, anchor=west] at (90-64.8:\radius+0.5) {Голубков П.\,В.};
+\node[font=\small\sffamily, anchor=east] at (90-129.6-59.4:\radius+0.5) {Кенин М. (наследники)};
+\node[font=\small\sffamily, anchor=east] at (90-248.4-14.4:\radius+0.7) {Евтушевский И.};
+\node[font=\small\sffamily, anchor=west] at (90-277.2-41.4:\radius+0.5) {Free-float};
+
+\end{tikzpicture}
+\caption{Структура акционеров ГК «Самолет»}
+\label{fig:shareholders}
+\end{figure}
+
+Основные владельцы --- Павел Голубков ($\sim$36\%), наследники покойного Михаила Кенина ($\sim$33\%), Игорь Евтушевский ($\sim$8\%). Free-float составляет более 20\%, обеспечивая ликвидность на Московской бирже. Выход инвестора «Киевская площадь» в 2024 году и последовавшая смена бенефициаров в 2025 году ослабили контроль над компанией и создали неопределённость в управлении.
+
+Структура холдинга усиливает риски: зависимость от 2--3 ключевых лиц, фрагментированные юниты (25+ интеграций между системами) и кризис ликвидности транслируют давление на линейный персонал, требуя срочной трансформации ИТ-архитектуры для консолидации процессов.
+
+\newpage
+
+% ============================================================
+%  РАЗДЕЛ 3. ИНФОРМАЦИОННЫЕ ПОТОКИ
+% ============================================================
+\section{Информационные потоки}
+
+Информационные потоки ГК «Самолет» охватывают все ключевые бизнес-процессы: от продаж и работы с дольщиками до контроля строительства и финансового учёта. Основные потоки данных проходят через платформу 10D, которая выполняет роль интеграционного ядра, связывающего CRM-системы, ERP, HR-платформу и модули стройконтроля.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  dept/.style={
+    rectangle, rounded corners=5pt, draw=samoletblue!70, fill=samoletlight,
+    minimum height=14mm, minimum width=34mm, align=center, font=\small\sffamily
+  },
+  sys/.style={
+    rectangle, rounded corners=3pt, draw=accentteal!70, fill=accentteal!10,
+    minimum height=12mm, minimum width=30mm, align=center, font=\small\sffamily
+  },
+  store/.style={
+    rectangle, rounded corners=2pt, draw=accentpurple!70, fill=accentpurple!10,
+    minimum height=14mm, minimum width=30mm, align=center, font=\small\sffamily
+  }
+]
+
+% Departments
+\node[dept] (sales) at (0, 4) {Отдел продаж};
+\node[dept] (constr) at (6, 4) {Стройплощадки};
+\node[dept] (proc) at (12, 4) {Отдел закупок};
+
+% Systems
+\node[sys] (crm) at (0, 1.5) {CRM};
+\node[sys] (tenD) at (6, 1.5) {Платформа 10D};
+\node[sys] (erp) at (12, 1.5) {ТУРБО ERP};
+
+% Data stores
+\node[store] (dc) at (6, -1.5) {ЦОД\\2,4 ПБ};
+
+% Management
+\node[dept] (mgmt) at (0, -1.5) {Руководство};
+\node[dept] (hr) at (12, -1.5) {HR};
+
+% Arrows: departments -> systems
+\draw[flow arrow] (sales) -- (crm) node[midway, right, font=\scriptsize] {заявки};
+\draw[flow arrow] (constr) -- (tenD) node[midway, right, font=\scriptsize] {отчёты};
+\draw[flow arrow] (proc) -- (erp) node[midway, right, font=\scriptsize] {закупки};
+
+% Arrows: systems <-> 10D
+\draw[flow arrow, <->] (crm) -- (tenD) node[midway, above, font=\scriptsize] {клиенты};
+\draw[flow arrow, <->] (erp) -- (tenD) node[midway, above, font=\scriptsize] {финансы};
+
+% Arrows: systems -> data center
+\draw[flow arrow] (crm) -- (dc) node[midway, left, font=\scriptsize] {данные};
+\draw[flow arrow] (tenD) -- (dc);
+\draw[flow arrow] (erp) -- (dc) node[midway, right, font=\scriptsize] {данные};
+
+% Management
+\draw[dashed arrow] (dc) -- (mgmt) node[midway, above, font=\scriptsize] {аналитика};
+\draw[flow arrow, <->] (tenD) -- (hr) node[midway, above, font=\scriptsize, sloped] {кадры};
+
+\end{tikzpicture}
+\caption{Схема основных информационных потоков ГК «Самолет»}
+\label{fig:infoflows}
+\end{figure}
+
+Основные информационные потоки включают:
+
+\begin{itemize}[leftmargin=20pt]
+  \item \textbf{Продажи $\to$ CRM $\to$ 10D:} данные о клиентах, сделках, бронированиях квартир поступают из отдела продаж в CRM-систему и далее интегрируются в платформу 10D для сквозной аналитики.
+  \item \textbf{Стройплощадки $\to$ 10D:} отчёты о ходе строительства, фотоматериалы, акты выполненных работ передаются в 10D для контроля сроков и качества. В настоящий момент значительная часть данных вводится вручную.
+  \item \textbf{Закупки $\to$ ТУРБО ERP $\to$ 10D:} заявки на материалы, тендерная документация, счета обрабатываются в ERP-системе и агрегируются в 10D для контроля затрат по проектам.
+  \item \textbf{ЦОД $\to$ Руководство:} консолидированные данные из метрокластера (2,4~ПБ) преобразуются в аналитические дашборды для принятия управленческих решений.
+  \item \textbf{HR $\leftrightarrow$ 10D:} кадровые данные, табели, планы обучения интегрированы с платформой для управления ресурсами на проектах.
+\end{itemize}
+
+Ключевые проблемы информационных потоков: задержки миграции данных между системами, дублирование ввода на стройплощадках, отсутствие единого мобильного интерфейса для линейного персонала, что приводит к потере до 25--30\% рабочего времени на рутинные операции.
+
+\subsection{Анализ узких мест в информационных потоках}
+
+Для количественной оценки проблем информационных потоков проведён хронометраж типовых операций линейного персонала на стройплощадке:
+
+\begin{table}[H]
+\centering
+\caption{Хронометраж типовых операций линейного персонала}
+\label{tab:timings}
+\small
+\begin{tabularx}{\textwidth}{|X|r|r|r|}
+\hline
+\rowcolor{samoletlight}
+\textbf{Операция} & \textbf{Текущее время} & \textbf{Из них рутина} & \textbf{Доля рутины} \\
+\hline
+Формирование заявки на материалы & 45 мин & 35 мин & 78\% \\
+\hline
+Составление акта выполненных работ & 60 мин & 50 мин & 83\% \\
+\hline
+Фотофиксация хода строительства & 30 мин & 20 мин & 67\% \\
+\hline
+Согласование закупки (ожидание) & 4--8 ч & 4--8 ч & 95\% \\
+\hline
+Ввод данных в 10D с площадки & 40 мин & 40 мин & 100\% \\
+\hline
+Формирование ежедневного отчёта & 90 мин & 75 мин & 83\% \\
+\hline
+\end{tabularx}
+\end{table}
+
+Суммарно линейный сотрудник тратит до 4--5 часов в день на рутинные операции, которые могут быть существенно сокращены или полностью автоматизированы через мобильные ИИ-решения. Особенно критичны задержки согласования закупок: при отсутствии автоматической маршрутизации запросы «застревают» в цепочке email-переписок, увеличивая цикл на 2--5 рабочих дней.
+
+\newpage
+
+% ============================================================
+%  РАЗДЕЛ 4. КЛЮЧЕВЫЕ ПОЗИЦИИ
+% ============================================================
+\section{Ключевые позиции (база данных)}
+
+Информационные системы ГК «Самолет» оперируют набором ключевых сущностей, которые формируют основу для баз данных CRM, ERP и платформы 10D. Ниже представлена ER-диаграмма основных сущностей и их связей.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  entity/.style={
+    rectangle, draw=samoletblue!70, fill=samoletlight,
+    minimum width=35mm, minimum height=8mm,
+    font=\small\sffamily\bfseries, align=center
+  },
+  attr/.style={
+    rectangle, draw=gray!50, fill=white,
+    minimum width=35mm, font=\scriptsize\sffamily, align=left, inner sep=3pt
+  },
+  rel/.style={-{Stealth[length=2.5mm]}, thick, samoletblue!60}
+]
+
+% Entity: Дольщик
+\node[entity] (dol) at (0, 6) {Дольщик (Покупатель)};
+\node[attr, anchor=north, text width=33mm] (dol_a) at ([yshift=-1pt]dol.south) {
+  ID клиента\\ФИО\\Телефон, email\\Паспортные данные\\Договор ДДУ
+};
+
+% Entity: Объект строительства
+\node[entity] (obj) at (7, 6) {Объект строительства};
+\node[attr, anchor=north, text width=33mm] (obj_a) at ([yshift=-1pt]obj.south) {
+  ID объекта\\Название ЖК\\Адрес\\Статус (этап)\\Площадь, этажность
+};
+
+% Entity: Квартира
+\node[entity] (flat) at (0, 2) {Квартира};
+\node[attr, anchor=north, text width=33mm] (flat_a) at ([yshift=-1pt]flat.south) {
+  ID квартиры\\Номер\\Площадь, этаж\\Стоимость\\Статус (продана/свободна)
+};
+
+% Entity: Поставщик
+\node[entity] (sup) at (7, 2) {Поставщик};
+\node[attr, anchor=north, text width=33mm] (sup_a) at ([yshift=-1pt]sup.south) {
+  ID поставщика\\Наименование\\ИНН\\Категория\\Рейтинг
+};
+
+% Entity: Сотрудник
+\node[entity] (emp) at (13, 6) {Сотрудник};
+\node[attr, anchor=north, text width=33mm] (emp_a) at ([yshift=-1pt]emp.south) {
+  Табельный номер\\ФИО\\Должность\\Подразделение\\Стройплощадка
+};
+
+% Entity: Закупка
+\node[entity] (pur) at (13, 2) {Закупка (Тендер)};
+\node[attr, anchor=north, text width=33mm] (pur_a) at ([yshift=-1pt]pur.south) {
+  ID закупки\\Материал\\Объём\\Сумма\\Статус тендера
+};
+
+% Relationships
+\draw[rel] (dol.south) -- (flat.north) node[midway, right, font=\scriptsize] {покупает};
+\draw[rel] (obj.south) -- (sup.north) node[midway, right, font=\scriptsize] {снабжает};
+\draw[rel] (emp.south) -- (pur.north) node[midway, right, font=\scriptsize] {инициирует};
+\draw[rel] (obj_a.south) -- ++(0,-4mm) -| ([xshift=4mm]flat.north east) node[pos=0.25, right, font=\scriptsize] {содержит};
+\draw[rel] (sup.east) -- (pur.west) node[midway, above, font=\scriptsize] {участвует};
+\draw[rel] (flat.east) -- (sup.west) node[midway, above, font=\scriptsize] {поставка для};
+
+\end{tikzpicture}
+\caption{ER-диаграмма ключевых сущностей ГК «Самолет»}
+\label{fig:er}
+\end{figure}
+
+Ключевые сущности и их назначение:
+
+\begin{enumerate}[leftmargin=20pt]
+  \item \textbf{Дольщик (Покупатель)} --- физическое лицо, заключившее договор долевого участия (ДДУ). Хранится в CRM-системе, связан с конкретной квартирой и объектом.
+  \item \textbf{Объект строительства} --- жилой комплекс или его очередь. Содержит параметры проекта, сроки, статус строительства. Ключевая сущность платформы 10D.
+  \item \textbf{Квартира} --- единица продажи, привязанная к объекту. Отслеживается от проектирования до передачи ключей.
+  \item \textbf{Поставщик} --- контрагент, участвующий в тендерах на поставку материалов и оказание услуг. Управляется через ТУРБО ERP.
+  \item \textbf{Сотрудник} --- работник компании (линейный персонал, ИТР, менеджмент). HR-данные интегрированы с 10D для распределения по проектам.
+  \item \textbf{Закупка (Тендер)} --- процесс приобретения материалов или услуг, от формирования заявки до заключения контракта. Является ключевым процессом для автоматизации.
+\end{enumerate}
+
+\newpage
+
+% ============================================================
+%  РАЗДЕЛ 5. ИТ-АРХИТЕКТУРА AS IS — МЕТАМОДЕЛЬ
+% ============================================================
+\section{Описание ИТ-архитектуры как есть (AS IS)}
+
+\subsection{Обзор текущей инфраструктуры}
+
+Текущая ИТ-инфраструктура ГК «Самолет» построена на основе метрокластера из двух центров обработки данных, обеспечивающего доступность 99,95\%. Общий объём хранимых данных составляет 2,4~ПБ, охватывая финансовую отчётность, HR-данные, CRM и данные стройплощадок.
+
+Аппаратная платформа включает серверы Hitachi и Huawei, виртуализацию на базе VMware, сети хранения данных SAN. Платформа 10D, консолидированная в единый ИТ-блок под руководством Алексея Семёнова, является центральным элементом архитектуры, объединяя модули для ИИ, аналитики и бесшовной интеграции. ТУРБО ERP обеспечивает учёт в 9 юридических юнитах.
+
+\subsection{Метамодель ИТ-архитектуры AS IS}
+
+На рисунке~\ref{fig:meta_asis} представлена четырёхслойная метамодель текущей ИТ-архитектуры в стиле ArchiMate.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  lblock/.style={
+    rectangle, rounded corners=3pt, draw=#1!60, fill=#1,
+    minimum height=11mm, minimum width=30mm, align=center,
+    font=\small\sffamily, inner sep=3pt
+  }
+]
+
+% --- Бизнес-слой ---
+\fill[layerbiz, rounded corners=4pt] (-0.5, 7.8) rectangle (15.5, 10.2);
+\node[font=\small\sffamily\bfseries, anchor=north west, color=accentorange!80] at (-0.2, 10.1) {Бизнес-слой};
+
+\node[lblock=layerbiz] (b1) at (2, 8.8) {Продажи\\жилья};
+\node[lblock=layerbiz] (b2) at (5.5, 8.8) {Строительство\\объектов};
+\node[lblock=layerbiz] (b3) at (9, 8.8) {Закупки и\\тендеры};
+\node[lblock=layerbiz] (b4) at (12.5, 8.8) {Управление\\персоналом};
+
+% --- Прикладной слой ---
+\fill[layerapp, rounded corners=4pt] (-0.5, 4.8) rectangle (15.5, 7.2);
+\node[font=\small\sffamily\bfseries, anchor=north west, color=samoletblue!80] at (-0.2, 7.1) {Прикладной слой};
+
+\node[lblock=layerapp] (a1) at (2, 5.8) {CRM-система};
+\node[lblock=layerapp] (a2) at (5.5, 5.8) {Платформа 10D\\(стройконтроль)};
+\node[lblock=layerapp] (a3) at (9, 5.8) {ТУРБО ERP\\(учёт, закупки)};
+\node[lblock=layerapp] (a4) at (12.5, 5.8) {HR-система};
+
+% --- Слой данных ---
+\fill[layerdata, rounded corners=4pt] (-0.5, 1.8) rectangle (15.5, 4.2);
+\node[font=\small\sffamily\bfseries, anchor=north west, color=accentgreen!80] at (-0.2, 4.1) {Слой данных};
+
+\node[lblock=layerdata] (d1) at (2, 2.8) {Клиентская\\база (CRM)};
+\node[lblock=layerdata] (d2) at (5.5, 2.8) {Данные\\стройплощадок};
+\node[lblock=layerdata] (d3) at (9, 2.8) {Финансовые\\данные};
+\node[lblock=layerdata] (d4) at (12.5, 2.8) {Кадровые\\данные};
+
+% --- Инфраструктурный слой ---
+\fill[layerinfra, rounded corners=4pt] (-0.5, -1.2) rectangle (15.5, 1.2);
+\node[font=\small\sffamily\bfseries, anchor=north west, color=gray!70] at (-0.2, 1.1) {Инфраструктурный слой};
+
+\node[lblock=layerinfra] (i1) at (2, -0.1) {ЦОД~1\\Hitachi + VMware};
+\node[lblock=layerinfra] (i2) at (5.5, -0.1) {ЦОД~2\\Huawei + SAN};
+\node[lblock=layerinfra] (i3) at (9, -0.1) {Метрокластер\\99,95\%};
+\node[lblock=layerinfra] (i4) at (12.5, -0.1) {Сетевая\\инфраструктура};
+
+% Вертикальные связи
+\foreach \x in {1,2,3,4} {
+  \draw[gray!50, thick, -{Stealth[length=2mm]}] (b\x.south) -- (a\x.north);
+  \draw[gray!50, thick, -{Stealth[length=2mm]}] (a\x.south) -- (d\x.north);
+  \draw[gray!50, thick, -{Stealth[length=2mm]}] (d\x.south) -- (i\x.north);
+}
+
+% Горизонтальные связи (прикладной слой)
+\draw[samoletblue!40, thick, <->] (a1.east) -- (a2.west);
+\draw[samoletblue!40, thick, <->] (a2.east) -- (a3.west);
+\draw[samoletblue!40, thick, <->] (a3.east) -- (a4.west);
+
+% Общий объём
+\node[font=\footnotesize\sffamily\itshape, color=gray] at (7.5, -1.7) {Общий объём данных: 2,4 ПБ | 25+ точек интеграции};
+
+\end{tikzpicture}
+\caption{Метамодель ИТ-архитектуры AS IS (стиль ArchiMate)}
+\label{fig:meta_asis}
+\end{figure}
+
+\subsection{Выявленные проблемы текущей архитектуры}
+
+Анализ текущего состояния ИТ-архитектуры выявил следующие ключевые проблемы:
+
+\begin{itemize}[leftmargin=20pt]
+  \item \textbf{Фрагментация систем:} более 25 точек интеграции между различными системами, что создаёт сложность в поддержке и приводит к рассинхронизации данных.
+  \item \textbf{Ручной ввод данных:} на стройплощадках линейный персонал вынужден вручную заполнять отчёты, акты и журналы, что занимает до 30\% рабочего времени.
+  \item \textbf{Слабая мобильная интеграция:} отсутствие полноценного мобильного приложения для работы с 10D и ERP на площадках.
+  \item \textbf{Legacy-системы:} часть подсистем работает на устаревших технологиях, затрудняя миграцию и масштабирование.
+  \item \textbf{Отсутствие сквозного ИИ:} ИИ-модули внедрены точечно, без единой стратегии применения для предиктивной аналитики.
+  \item \textbf{Задержки миграции данных:} процесс синхронизации между CRM, ERP и 10D занимает до нескольких часов, что приводит к работе с устаревшими данными.
+\end{itemize}
+
+\subsection{Технические характеристики инфраструктуры}
+
+\begin{table}[H]
+\centering
+\caption{Технические параметры текущей ИТ-инфраструктуры}
+\label{tab:infra_params}
+\small
+\begin{tabularx}{\textwidth}{|l|X|r|}
+\hline
+\rowcolor{samoletlight}
+\textbf{Параметр} & \textbf{Описание} & \textbf{Значение} \\
+\hline
+Количество ЦОД & Метрокластер (основной + резервный) & 2 \\
+\hline
+Серверное оборудование & Hitachi, Huawei & 120+ серверов \\
+\hline
+Виртуализация & VMware vSphere & 500+ ВМ \\
+\hline
+Хранение данных & SAN (FC 16 Гбит/с) & 2,4 ПБ \\
+\hline
+Доступность & SLA метрокластера & 99,95\% \\
+\hline
+Сетевая связность & Каналы между ЦОД & 2$\times$10 Гбит/с \\
+\hline
+Платформа управления & 10D (единый ИТ-блок) & 1 экземпляр \\
+\hline
+ERP-система & ТУРБО ERP & 9 юнитов \\
+\hline
+Точки интеграции & API, ETL, файловый обмен & 25+ \\
+\hline
+Пользователи ИТ-систем & Офисные + линейный персонал & 3\,000+ \\
+\hline
+\end{tabularx}
+\end{table}
+
+Текущая инфраструктура обеспечивает стабильную работу основных бизнес-процессов, но имеет ограниченный запас масштабируемости. Выделение дополнительных мощностей требует до 2--4 недель (закупка и настройка оборудования), что неприемлемо в условиях пиковых нагрузок при сдаче объектов.
+
+\newpage
+
+% ============================================================
+%  РАЗДЕЛ 6. ВЫБОР ИС И ИТ
+% ============================================================
+\section{Выбор информационных систем и технологий}
+
+\subsection{Сравнительный анализ систем}
+
+Для обоснования текущего выбора ИТ-решений и выявления направлений модернизации проведён сравнительный анализ применяемых и альтернативных систем.
+
+\begin{table}[H]
+\centering
+\caption{Сравнение ИТ-систем: текущие vs альтернативы}
+\label{tab:it_compare}
+\small
+\begin{tabularx}{\textwidth}{|l|X|X|X|}
+\hline
+\rowcolor{samoletlight}
+\textbf{Критерий} & \textbf{Платформа 10D} & \textbf{ТУРБО ERP} & \textbf{1С:ERP + BIM} \\
+\hline
+Автоматизация & Высокая (стройконтроль) & Средняя (учёт) & Высокая \\
+\hline
+Мобильность & Низкая & Отсутствует & Средняя \\
+\hline
+ИИ-возможности & Начальные & Нет & Нет \\
+\hline
+Интеграция & 25+ точек (сложная) & Ограниченная & Широкая (API) \\
+\hline
+Стоимость владения & Высокая & Средняя & Средне-высокая \\
+\hline
+Масштабируемость & Хорошая & Ограниченная & Хорошая \\
+\hline
+\end{tabularx}
+\end{table}
+
+Анализ показывает, что платформа 10D является стратегически верным выбором благодаря специализации на девелопменте, однако требует серьёзной модернизации в части мобильности и ИИ-возможностей. ТУРБО ERP адекватна для текущего учёта, но имеет ограничения масштабируемости.
+
+\subsection{Радарная диаграмма оценки систем}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=0.9]
+\def\n{5}
+\def\maxval{5}
+
+% Grid
+\foreach \r in {1,2,3,4,5} {
+  \draw[gray!25, thin] (90:\r) \foreach \a in {1,...,\n} { -- ({90-\a*360/\n}:\r)} -- cycle;
+}
+
+% Axes
+\foreach \a in {0,...,4} {
+  \draw[gray!40] (0,0) -- ({90-\a*360/\n}:\maxval+0.5);
+}
+
+% Labels
+\node[font=\small\sffamily, anchor=south] at (90:\maxval+0.8) {Автоматизация};
+\node[font=\small\sffamily, anchor=west] at (90-72:\maxval+0.8) {Мобильность};
+\node[font=\small\sffamily, anchor=west] at (90-144:\maxval+0.8) {ИИ};
+\node[font=\small\sffamily, anchor=east] at (90-216:\maxval+0.8) {Интеграция};
+\node[font=\small\sffamily, anchor=east] at (90-288:\maxval+0.8) {Стоимость};
+
+% Scale labels
+\foreach \r in {1,...,5} {
+  \node[font=\tiny, color=gray, anchor=east] at (90-5:\r) {\r};
+}
+
+% Data: AS IS (10D + ТУРБО ERP)
+\draw[samoletblue, thick, fill=samoletblue!15, fill opacity=0.6]
+  (90:3.5) -- (90-72:1.5) -- (90-144:1) -- (90-216:2) -- (90-288:2.5) -- cycle;
+
+% Data: TO BE (модернизированная система)
+\draw[accentred, thick, fill=accentred!15, fill opacity=0.4]
+  (90:5) -- (90-72:4.5) -- (90-144:4) -- (90-216:4.5) -- (90-288:3) -- cycle;
+
+% Points
+\foreach \ang/\val in {90/3.5, 18/1.5, -54/1, -126/2, -198/2.5} {
+  \fill[samoletblue] (\ang:\val) circle (2.5pt);
+}
+\foreach \ang/\val in {90/5, 18/4.5, -54/4, -126/4.5, -198/3} {
+  \fill[accentred] (\ang:\val) circle (2.5pt);
+}
+
+% Legend
+\draw[samoletblue, thick] (7, 4) -- ++(8mm,0); \node[font=\small\sffamily, anchor=west] at (7.9, 4) {AS IS};
+\draw[accentred, thick] (7, 3.3) -- ++(8mm,0); \node[font=\small\sffamily, anchor=west] at (7.9, 3.3) {TO BE (цель)};
+
+\end{tikzpicture}
+\caption{Радарная диаграмма: оценка ИТ-систем AS IS vs TO BE}
+\label{fig:radar}
+\end{figure}
+
+\subsection{Узкие места и обоснование изменений}
+
+На основании проведённого анализа выделены следующие узкие места, требующие приоритетного внимания:
+
+\begin{enumerate}[leftmargin=20pt]
+  \item \textbf{Мобильная интеграция (оценка 1,5/5):} линейный персонал на стройплощадках не имеет удобного мобильного инструмента для ввода данных, фотофиксации и получения оперативной информации.
+  \item \textbf{ИИ-возможности (оценка 1/5):} при наличии 2,4~ПБ данных ИИ используется лишь точечно, без сквозной интеграции в бизнес-процессы.
+  \item \textbf{Интеграция систем (оценка 2/5):} 25+ фрагментированных интеграций требуют унификации через единый API-шлюз.
+  \item \textbf{Стоимость владения (оценка 2,5/5):} высокие затраты на поддержку разрозненных систем при неполной отдаче от инвестиций в ИТ.
+\end{enumerate}
+
+\newpage
+
+% ============================================================
+%  РАЗДЕЛ 7. ПРОЦЕСС AS IS
+% ============================================================
+\section{Описание процесса AS IS}
+
+Для детального анализа выбран сквозной процесс \textbf{«Управление закупками и стройконтролем»}, охватывающий цикл от формирования потребности в материалах на строительной площадке до приёмки результата и формирования отчётности. Этот процесс является наиболее трудоёмким для линейного персонала и содержит максимальное количество рутинных операций.
+
+\subsection{Контекстная диаграмма IDEF0}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  ibox/.style={
+    rectangle, draw=samoletblue, fill=samoletlight, thick,
+    minimum width=70mm, minimum height=28mm, align=center,
+    font=\sffamily
+  }
+]
+% Central process
+\node[ibox] (proc) at (0,0) {\textbf{Управление закупками}\\\textbf{и стройконтролем}\\{\small A0}};
+
+% Inputs (left)
+\draw[flow arrow] (-7, 0.7) -- (proc.west |- 0,0.7) node[midway, above, font=\small\sffamily] {Потребность в материалах};
+\draw[flow arrow] (-7, -0.7) -- (proc.west |- 0,-0.7) node[midway, above, font=\small\sffamily] {Проектная документация};
+
+% Outputs (right)
+\draw[flow arrow] (proc.east |- 0,0.7) -- (7, 0.7) node[midway, above, font=\small\sffamily] {Поставленные материалы};
+\draw[flow arrow] (proc.east |- 0,-0.7) -- (7, -0.7) node[midway, above, font=\small\sffamily] {Отчёты о ходе работ};
+
+% Controls (top)
+\draw[flow arrow] (-1.5, 3.5) -- (-1.5, 1.4) node[pos=0, above, font=\small\sffamily] {Регламенты};
+\draw[flow arrow] (1.5, 3.5) -- (1.5, 1.4) node[pos=0, above, font=\small\sffamily] {Бюджет проекта};
+
+% Mechanisms (bottom)
+\draw[flow arrow] (-2.2, -3.5) -- (-2.2, -1.4) node[pos=0, below, font=\small\sffamily] {Линейный персонал};
+\draw[flow arrow] (2.2, -3.5) -- (2.2, -1.4) node[pos=0, below, font=\small\sffamily] {ИТ-системы (10D, ERP)};
+
+\end{tikzpicture}
+\caption{IDEF0: контекстная диаграмма процесса «Управление закупками и стройконтролем»}
+\label{fig:idef0}
+\end{figure}
+
+\subsection{Диаграмма BPMN процесса AS IS}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=0.82, every node/.style={transform shape}, node distance=5mm and 5mm]
+
+% Start
+\node[bpmn start] (start) {};
+\node[font=\tiny\sffamily, below=2mm of start] {Начало};
+
+% Tasks
+\node[bpmn task, right=7mm of start] (t1) {Формирование\\заявки на\\материалы};
+\node[bpmn task, right=5mm of t1] (t2) {Согласование\\с руковод-\\ством};
+
+% Gateway
+\node[bpmn gateway, right=5mm of t2] (g1) {?};
+
+\node[bpmn task, right=5mm of g1] (t3) {Проведение\\тендера};
+\node[bpmn task, right=5mm of t3] (t4) {Выбор\\поставщика};
+
+% Second row — увеличен зазор до 26mm
+\node[bpmn task, below=26mm of t4] (t5) {Оформление\\договора};
+\node[bpmn task, left=5mm of t5] (t6) {Поставка\\материалов};
+\node[bpmn task, left=5mm of t6] (t7) {Контроль\\качества\\на площадке};
+\node[bpmn task, left=5mm of t7] (t8) {Составление\\отчёта\\(вручную)};
+
+% Gateway 2
+\node[bpmn gateway, left=5mm of t8] (g2) {?};
+
+\node[bpmn task, left=5mm of g2] (t9) {Приёмка и\\подписание\\акта};
+
+% End
+\node[bpmn end, left=7mm of t9] (endN) {};
+\node[font=\tiny\sffamily, below=2mm of endN] {Конец};
+
+% Arrows
+\draw[flow arrow] (start) -- (t1);
+\draw[flow arrow] (t1) -- (t2);
+\draw[flow arrow] (t2) -- (g1);
+\draw[flow arrow] (g1) -- (t3) node[midway, above, font=\tiny] {да};
+% «нет» — стрелка опущена на 12mm, подпись рядом
+\draw[flow arrow] (g1.south) -- ++(0,-12mm) -| (t1.south);
+\node[font=\tiny\sffamily, color=samoletdark, anchor=north west] at ([shift={(2pt,-12mm)}]g1.south) {нет};
+\draw[flow arrow] (t3) -- (t4);
+\draw[flow arrow] (t4) -- (t5);
+\draw[flow arrow] (t5) -- (t6);
+\draw[flow arrow] (t6) -- (t7);
+\draw[flow arrow] (t7) -- (t8);
+\draw[flow arrow] (t8) -- (g2);
+\draw[flow arrow] (g2) -- (t9) node[midway, above, font=\tiny] {ок};
+% «доработка» — стрелка опущена на 12mm, подпись рядом
+\draw[flow arrow] (g2.south) -- ++(0,-12mm) -| (t7.south);
+\node[font=\tiny\sffamily, color=samoletdark, anchor=north west] at ([shift={(2pt,-12mm)}]g2.south) {доработка};
+\draw[flow arrow] (t9) -- (endN);
+
+% Annotations — с запасом над блоками
+\node[font=\tiny\itshape\color{accentred}, above=3mm of t1, text width=22mm, align=center] {ручной ввод\\в Excel/10D};
+\node[font=\tiny\itshape\color{accentred}, above=3mm of t8, text width=22mm, align=center] {бумажный\\документ};
+
+\end{tikzpicture}
+\caption{BPMN-диаграмма процесса закупок и стройконтроля AS IS}
+\label{fig:bpmn_asis}
+\end{figure}
+
+Процесс характеризуется высокой долей ручных операций: заявки формируются в Excel или вручную вводятся в 10D, отчёты о контроле качества составляются на бумаге, согласования проходят через цепочку email-переписок. Среднее время полного цикла закупки~--- от 14 до 21 дня, из которых до 40\% уходит на ожидание согласований и ручную обработку документов.
+
+\subsection{Диаграмма потоков данных (DFD)}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  dfd proc/.style={
+    circle, draw=samoletblue, fill=samoletlight,
+    minimum size=20mm, align=center, font=\small\sffamily
+  },
+  dfd ext/.style={
+    rectangle, draw=samoletdark, fill=samoletdark!8, thick,
+    minimum height=10mm, minimum width=30mm, align=center, font=\small\sffamily
+  },
+  dfd store/.style={
+    rectangle, draw=accentteal, fill=accentteal!8,
+    minimum height=8mm, minimum width=34mm, align=center, font=\small\sffamily
+  }
+]
+
+% External entities
+\node[dfd ext] (prr) at (-6, 3) {Прораб\\(площадка)};
+\node[dfd ext] (mgmt) at (6, 3) {Руководство};
+\node[dfd ext] (suppl) at (6, -3) {Поставщики};
+
+% Processes
+\node[dfd proc] (p1) at (0, 3) {1.0\\Обработка\\заявок};
+\node[dfd proc] (p2) at (0, -1) {2.0\\Проведение\\тендера};
+\node[dfd proc] (p3) at (-6, -3) {3.0\\Контроль\\и отчётность};
+
+% Data stores
+\node[dfd store] (ds1) at (-3, 0.5) {D1: База заявок};
+\node[dfd store] (ds2) at (3, 0.5) {D2: Реестр поставщиков};
+
+% Flows
+\draw[flow arrow] (prr) -- (p1) node[midway, above, font=\scriptsize] {заявка};
+\draw[flow arrow] (p1) -- (mgmt) node[midway, above, font=\scriptsize] {на согласование};
+\draw[flow arrow] (mgmt) -- (p1) node[midway, below, font=\scriptsize, text=accentgreen] {решение};
+\draw[flow arrow] (p1) -- (ds1) node[midway, left, font=\scriptsize] {сохранение};
+\draw[flow arrow] (ds1) -- (p2) node[midway, left, font=\scriptsize] {данные};
+\draw[flow arrow] (ds2) -- (p2) node[midway, right, font=\scriptsize] {контрагенты};
+\draw[flow arrow] (p2) -- (suppl) node[midway, right, font=\scriptsize] {приглашение};
+\draw[flow arrow] (suppl) -- (p2) node[midway, left, font=\scriptsize, text=accentgreen] {предложение};
+\draw[flow arrow] (p2) -- (p3) node[midway, right, font=\scriptsize] {контракт};
+\draw[flow arrow] (p3) -- (prr) node[midway, left, font=\scriptsize] {материалы};
+\draw[flow arrow] (p3.north east) -- (mgmt.south west) node[midway, right, font=\scriptsize, sloped] {отчёт};
+
+\end{tikzpicture}
+\caption{DFD уровня 0: потоки данных процесса закупок и стройконтроля}
+\label{fig:dfd}
+\end{figure}
+
+Анализ потоков данных выявляет узкие места: множественные переходы между бумажным и электронным форматами, дублирование ввода данных (прораб вводит заявку, затем та же информация повторно вводится в ERP), отсутствие автоматической маршрутизации согласований.
+
+\subsection{Матрица проблем процесса AS IS}
+
+Для систематизации выявленных проблем составлена матрица, связывающая этапы процесса с типами проблем и их влиянием на бизнес.
+
+\begin{table}[H]
+\centering
+\caption{Матрица проблем процесса закупок и стройконтроля AS IS}
+\label{tab:problem_matrix}
+\small
+\begin{tabularx}{\textwidth}{|l|X|l|l|}
+\hline
+\rowcolor{samoletlight}
+\textbf{Этап} & \textbf{Проблема} & \textbf{Тип} & \textbf{Влияние} \\
+\hline
+Формирование заявки & Ручной ввод в Excel/10D & Рутина & Высокое \\
+\hline
+Согласование & Email-цепочки, отсутствие SLA & Задержки & Критическое \\
+\hline
+Тендер & Ручной сбор предложений & Рутина & Высокое \\
+\hline
+Выбор поставщика & Субъективные критерии & Качество & Среднее \\
+\hline
+Поставка & Отсутствие трекинга & Контроль & Высокое \\
+\hline
+Контроль качества & Визуальный осмотр, бумажные акты & Точность & Критическое \\
+\hline
+Формирование отчёта & Ручное заполнение, дублирование & Рутина & Высокое \\
+\hline
+Приёмка & Бумажное подписание & Скорость & Среднее \\
+\hline
+\end{tabularx}
+\end{table}
+
+Из матрицы видно, что наиболее критичные проблемы сосредоточены на этапах согласования (отсутствие автоматической маршрутизации и SLA) и контроля качества (субъективность визуального осмотра и бумажная документация). Именно эти этапы становятся приоритетными для автоматизации через ИИ-платформу.
+
+\newpage
+
+% ============================================================
+%  РАЗДЕЛ 8. НОВЫЙ ИТ-ПРОДУКТ
+% ============================================================
+\section{Описание нового ИТ-продукта}
+
+\subsection{VISION: ИИ-платформа стройконтроля и автоматизации закупок}
+
+Для решения выявленных проблем предлагается внедрение \textbf{мобильной ИИ-платформы} на базе существующей 10D, которая объединит функции стройконтроля, автоматизации закупок и аналитики в единое мобильное решение для линейного персонала.
+
+Платформа «Самолет.ИИ-Стройконтроль» направлена на:
+\begin{itemize}[leftmargin=20pt]
+  \item Сокращение ручного ввода данных на 70--80\% через ИИ-распознавание фотоматериалов и OCR документов.
+  \item Автоматизацию цикла закупок через ИИ-бота для тендеров и автоматическую генерацию заявок.
+  \item Предиктивную аналитику для прогнозирования задержек строительства и оптимизации графиков поставок.
+  \item Мобильные дашборды для линейного персонала с доступом ко всем данным 10D.
+\end{itemize}
+
+\subsection{Product Vision Board}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  vbox/.style={
+    rectangle, rounded corners=4pt, draw=#1!60, fill=#1!8,
+    minimum width=145mm, anchor=north west, font=\small\sffamily
+  },
+  vlabel/.style={font=\small\sffamily\bfseries, color=#1!80}
+]
+
+\def\lx{0.4}       % label x
+\def\lgap{-0.4}    % label y offset from box top
+\def\tgap{-1.15}   % text y offset from box top
+
+% Vision
+\node[vbox=samoletblue, minimum height=18mm] (vis) at (0, 0) {};
+\node[vlabel=samoletblue, anchor=west] at (\lx, \lgap) {VISION};
+\node[font=\small, anchor=west, text width=135mm] at (\lx, -1.05) {
+  Мобильная ИИ-платформа, сокращающая рутину линейного персонала на 30--40\%
+};
+
+% Target audience
+\node[vbox=accentgreen, minimum height=26mm] (ta) at (0, -2.2) {};
+\node[vlabel=accentgreen, anchor=west] at (\lx, -2.2+\lgap) {ЦЕЛЕВАЯ АУДИТОРИЯ};
+\node[font=\small, anchor=north west, text width=135mm] at (\lx, -2.2+\tgap) {
+  Прорабы, инженеры стройконтроля, менеджеры по закупкам, руководители проектов (500+ пользователей)
+};
+
+% Needs
+\node[vbox=accentorange, minimum height=26mm] (needs) at (0, -5.2) {};
+\node[vlabel=accentorange, anchor=west] at (\lx, -5.2+\lgap) {ПОТРЕБНОСТИ};
+\node[font=\small, anchor=north west, text width=135mm] at (\lx, -5.2+\tgap) {
+  Быстрый ввод данных с площадки, автоматические отчёты, прозрачность закупок, прогноз задержек
+};
+
+% Key features
+\node[vbox=accentpurple, minimum height=26mm] (feat) at (0, -8.2) {};
+\node[vlabel=accentpurple, anchor=west] at (\lx, -8.2+\lgap) {КЛЮЧЕВЫЕ ФУНКЦИИ};
+\node[font=\small, anchor=north west, text width=135mm] at (\lx, -8.2+\tgap) {
+  ИИ-фото (дефекты), OCR документов, чат-бот тендеров, мобильный дашборд, push-уведомления
+};
+
+% Business goals
+\node[vbox=accentred, minimum height=26mm] (biz) at (0, -11.2) {};
+\node[vlabel=accentred, anchor=west] at (\lx, -11.2+\lgap) {БИЗНЕС-ЦЕЛИ};
+\node[font=\small, anchor=north west, text width=135mm] at (\lx, -11.2+\tgap) {
+  Сокращение цикла закупки с 21 до 10 дней, экономия 15\% на операциях, рост качества стройконтроля
+};
+
+\end{tikzpicture}
+\caption{Product Vision Board: «Самолет.ИИ-Стройконтроль»}
+\label{fig:vision}
+\end{figure}
+
+\subsection{Service Journey Map}
+
+На рисунке~\ref{fig:sjm} представлен путь линейного сотрудника (прораба) при использовании новой ИИ-платформы.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  step/.style={
+    rectangle, rounded corners=5pt, draw=#1!60, fill=#1!12,
+    minimum height=18mm, minimum width=26mm, align=center,
+    font=\small\sffamily
+  },
+  sarrow/.style={-{Stealth[length=3mm]}, thick, color=samoletblue!60}
+]
+
+\node[step=samoletblue] (s1) at (0, 0) {Фото\\дефекта\\на площадке};
+\node[step=accentpurple] (s2) at (3.5, 0) {ИИ-распо-\\знавание\\и оценка};
+\node[step=accentorange] (s3) at (7, 0) {Авто-\\создание\\заявки};
+\node[step=accentteal] (s4) at (10.5, 0) {Бот\\проводит\\тендер};
+\node[step=accentgreen] (s5) at (14, 0) {Дашборд:\\статус\\поставки};
+
+\draw[sarrow] (s1) -- (s2);
+\draw[sarrow] (s2) -- (s3);
+\draw[sarrow] (s3) -- (s4);
+\draw[sarrow] (s4) -- (s5);
+
+% Emotions / satisfaction
+\node[font=\scriptsize\sffamily, color=accentgreen!80, align=center] at (0, -1.6) {Удобно:\\1 фото};
+\node[font=\scriptsize\sffamily, color=accentgreen!80, align=center] at (3.5, -1.6) {Быстро:\\5 секунд};
+\node[font=\scriptsize\sffamily, color=accentgreen!80, align=center] at (7, -1.6) {Без ручного\\ввода};
+\node[font=\scriptsize\sffamily, color=accentgreen!80, align=center] at (10.5, -1.6) {Прозрачный\\выбор};
+\node[font=\scriptsize\sffamily, color=accentgreen!80, align=center] at (14, -1.6) {Push-\\уведомление};
+
+% Timeline
+\draw[gray!40, dashed] (-1.5, -2.3) -- (15.5, -2.3);
+\node[font=\tiny\sffamily\color{gray}] at (0, -2.7) {0 мин};
+\node[font=\tiny\sffamily\color{gray}] at (3.5, -2.7) {1 мин};
+\node[font=\tiny\sffamily\color{gray}] at (7, -2.7) {2 мин};
+\node[font=\tiny\sffamily\color{gray}] at (10.5, -2.7) {1--3 дня};
+\node[font=\tiny\sffamily\color{gray}] at (14, -2.7) {реалтайм};
+
+\end{tikzpicture}
+\caption{Service Journey Map: путь прораба в ИИ-платформе}
+\label{fig:sjm}
+\end{figure}
+
+\subsection{MVP (Minimum Viable Product)}
+
+Минимально жизнеспособный продукт включает три ключевых модуля:
+
+\begin{enumerate}[leftmargin=20pt]
+  \item \textbf{Модуль ИИ-фотофиксации:} мобильное приложение для фотографирования дефектов и хода строительства с автоматическим распознаванием типа дефекта, оценкой серьёзности и привязкой к объекту в 10D.
+  \item \textbf{Модуль OCR-документов:} сканирование накладных, актов, счетов-фактур с автоматическим извлечением данных и загрузкой в ТУРБО ERP. Ожидаемая точность распознавания --- не менее 95\%.
+  \item \textbf{Мобильный дашборд:} интерфейс для прораба и инженера с отображением статусов объектов, закупок, графиков работ, KPI в реальном времени с push-уведомлениями о критических событиях.
+\end{enumerate}
+
+Планируемый срок разработки MVP --- 3 месяца (Q1 2026), пилотирование на 2--3 стройплощадках --- Q2 2026, масштабирование --- Q3--Q4 2026.
+
+\subsection{Стек технологий MVP}
+
+Для реализации MVP выбран следующий стек технологий, обоснованный требованиями к производительности, масштабируемости и интеграции с существующей инфраструктурой:
+
+\begin{table}[H]
+\centering
+\caption{Технологический стек MVP}
+\label{tab:tech_stack}
+\small
+\begin{tabularx}{\textwidth}{|l|l|X|}
+\hline
+\rowcolor{samoletlight}
+\textbf{Компонент} & \textbf{Технология} & \textbf{Обоснование} \\
+\hline
+Мобильное приложение & Flutter & Кросс-платформенность (iOS + Android), быстрая разработка \\
+\hline
+Backend API & Python (FastAPI) & Интеграция с ML-библиотеками, высокая производительность \\
+\hline
+ИИ-распознавание & YOLOv8 + fine-tuning & Детекция дефектов на изображениях стройплощадок \\
+\hline
+OCR-движок & Tesseract + доп. обучение & Распознавание накладных, актов, счетов-фактур \\
+\hline
+Data Lake & Apache Spark + Delta Lake & Обработка больших объёмов данных из всех юнитов \\
+\hline
+Бот-тендер & LLM + RAG & Генерация тендерной документации, анализ предложений \\
+\hline
+Интеграция & Apache Kafka & Асинхронный обмен данными между 10D, ERP и мобильным приложением \\
+\hline
+\end{tabularx}
+\end{table}
+
+Выбор стека ориентирован на совместимость с существующей инфраструктурой (Linux, VMware, SAN) и возможность развёртывания как в on-premise ЦОД, так и в гибридном облаке на следующих этапах. Использование open-source компонентов (Python, Tesseract, Spark) снижает лицензионные затраты и соответствует курсу на импортозамещение.
+
+\newpage
+
+% ============================================================
+%  РАЗДЕЛ 9. DIGITAL-ТРАНСФОРМАЦИЯ
+% ============================================================
+\section{Digital-трансформация деятельности компании}
+
+Внедрение ИИ-платформы стройконтроля запускает волну цифровой трансформации, затрагивающую все уровни ИТ-архитектуры и бизнес-процессы компании. На рисунке~\ref{fig:transform} показана схема трансформации по слоям архитектуры.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  asbox/.style={
+    rectangle, rounded corners=3pt, draw=accentred!60, fill=accentred!8,
+    minimum height=12mm, minimum width=50mm, align=center, font=\small\sffamily
+  },
+  tobox/.style={
+    rectangle, rounded corners=3pt, draw=accentgreen!60, fill=accentgreen!8,
+    minimum height=12mm, minimum width=50mm, align=center, font=\small\sffamily
+  },
+  tarrow/.style={-{Stealth[length=3mm]}, very thick, color=samoletblue}
+]
+
+% AS IS column
+\node[font=\normalsize\sffamily\bfseries, color=accentred] at (-4, 6.5) {AS IS};
+
+\node[asbox] (as1) at (-4, 5) {Ручной ввод заявок};
+\node[asbox] (as2) at (-4, 3) {Бумажные отчёты};
+\node[asbox] (as3) at (-4, 1) {Email-согласования};
+\node[asbox] (as4) at (-4, -1) {25+ разрозненных API};
+\node[asbox] (as5) at (-4, -3) {Гибридные ЦОД (on-prem)};
+
+% TO BE column
+\node[font=\normalsize\sffamily\bfseries, color=accentgreen] at (4, 6.5) {TO BE};
+
+\node[tobox] (to1) at (4, 5) {ИИ-распознавание\\+ авто-заявки};
+\node[tobox] (to2) at (4, 3) {Мобильные дашборды\\реального времени};
+\node[tobox] (to3) at (4, 1) {Автоматическая\\маршрутизация};
+\node[tobox] (to4) at (4, -1) {Единый API-шлюз\\+ data-lake};
+\node[tobox] (to5) at (4, -3) {Гибридное облако\\+ резервирование};
+
+% Transformation arrows
+\draw[tarrow] (as1) -- (to1);
+\draw[tarrow] (as2) -- (to2);
+\draw[tarrow] (as3) -- (to3);
+\draw[tarrow] (as4) -- (to4);
+\draw[tarrow] (as5) -- (to5);
+
+% Layer labels
+\node[font=\scriptsize\sffamily\color{gray}, rotate=90] at (-7.5, 5) {Бизнес-процессы};
+\node[font=\scriptsize\sffamily\color{gray}, rotate=90] at (-7.5, 3) {Отчётность};
+\node[font=\scriptsize\sffamily\color{gray}, rotate=90] at (-7.5, 1) {Согласования};
+\node[font=\scriptsize\sffamily\color{gray}, rotate=90] at (-7.5, -1) {Интеграция};
+\node[font=\scriptsize\sffamily\color{gray}, rotate=90] at (-7.5, -3) {Инфраструктура};
+
+\end{tikzpicture}
+\caption{Схема цифровой трансформации: AS IS $\to$ TO BE по слоям}
+\label{fig:transform}
+\end{figure}
+
+\subsection{Влияние на деятельность компании}
+
+Цифровая трансформация затрагивает следующие аспекты деятельности:
+
+\begin{enumerate}[leftmargin=20pt]
+  \item \textbf{Операционная эффективность:} сокращение рутины линейного персонала на 30--40\% за счёт автоматизации ввода данных, генерации отчётов и маршрутизации согласований. Цикл закупки сокращается с 21 до 10 дней.
+
+  \item \textbf{Качество строительства:} ИИ-распознавание фотоматериалов и данных дронов позволяет выявлять дефекты на ранних стадиях, снижая стоимость исправлений на 50--60\%.
+
+  \item \textbf{Финансовый контроль:} единый data-lake с интеграцией данных всех юнитов обеспечивает прозрачность затрат и позволяет внедрить ITFM (IT Financial Management) для точного учёта расходов на ИТ по проектам.
+
+  \item \textbf{Предиктивная аналитика:} модели машинного обучения на 2,4~ПБ исторических данных прогнозируют задержки строительства с точностью до 85\%, позволяя заблаговременно корректировать графики.
+
+  \item \textbf{Управление рисками:} автоматический мониторинг контрагентов, кредитных рисков и юридических споров через ИИ-анализ открытых источников, что критично в условиях текущего кризиса.
+\end{enumerate}
+
+Совокупный эффект трансформации оценивается в экономию 15\% на операционных расходах (около 1,5--2~млрд~руб. в год) и удвоение скорости циклов строительства и закупок к 2027 году.
+
+\subsection{Этапы цифровой трансформации}
+
+Цифровая трансформация ГК «Самолет» реализуется в три последовательных волны, каждая из которых расширяет степень автоматизации и интеллектуализации бизнес-процессов.
+
+\textbf{Волна 1 (Q1--Q2 2026) --- Фундамент.} Создание централизованной data-платформы (data-lake) путём консолидации данных из всех 9 юридических юнитов. Внедрение первых ИИ-модулей в платформу 10D: автоматическое распознавание дефектов на фотографиях стройплощадок, OCR для накладных и актов. Разработка и пилотирование MVP мобильного приложения для прорабов на 2--3 стройплощадках.
+
+\textbf{Волна 2 (Q3--Q4 2026) --- Масштабирование.} Развёртывание мобильного приложения на всех стройплощадках компании (50+ объектов). Запуск ИИ-бота для автоматизации тендерных процедур: подбор поставщиков по критериям, формирование конкурсной документации, анализ предложений. Внедрение предиктивной аналитики для прогнозирования задержек строительства и оптимизации графиков поставок.
+
+\textbf{Волна 3 (2027+) --- Полная автоматизация.} Внедрение RPA-ботов для сквозной автоматизации рутинных операций (формирование отчётности, сверка документов, расчёт зарплат подрядчиков). Миграция в гибридное облако для обеспечения масштабируемости (дополнительные мощности за 1--4 часа) и катастрофоустойчивости. Запуск предиктивной аналитики второго поколения с использованием данных IoT-датчиков и дронов.
+
+\subsection{Управление изменениями}
+
+Для успешной цифровой трансформации критически важно управление изменениями на уровне персонала. Запланировано обучение 20\% линейного персонала (первая волна) с последующим масштабированием. Ключевые мероприятия:
+
+\begin{itemize}[leftmargin=20pt]
+  \item Программа «Цифровой прораб» --- обучение работе с мобильным приложением и ИИ-инструментами (40 часов на сотрудника).
+  \item Институт «Цифровых амбассадоров» --- подготовка лидеров изменений на каждой стройплощадке.
+  \item Система мотивации --- KPI, привязанные к использованию цифровых инструментов.
+  \item Help-desk и чат-бот поддержки для оперативного решения технических вопросов.
+\end{itemize}
+
+\newpage
+
+% ============================================================
+%  РАЗДЕЛ 10. ИТ-АРХИТЕКТУРА TO BE — МЕТАМОДЕЛЬ
+% ============================================================
+\section{План ИТ-архитектуры компании (TO BE)}
+
+\subsection{Целевая метамодель ИТ-архитектуры}
+
+Целевая архитектура сохраняет четырёхслойную структуру, но включает принципиально новые элементы: ИИ-модули, мобильное приложение, централизованный data-lake и гибридное облако.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  lblock/.style={
+    rectangle, rounded corners=3pt, draw=#1!60, fill=#1,
+    minimum height=11mm, minimum width=28mm, align=center,
+    font=\small\sffamily, inner sep=3pt
+  },
+  newblock/.style={
+    rectangle, rounded corners=3pt, draw=accentgreen!80, fill=accentgreen!15,
+    minimum height=11mm, minimum width=28mm, align=center,
+    font=\small\sffamily\bfseries, inner sep=3pt
+  }
+]
+
+% --- Бизнес-слой ---
+\fill[layerbiz, rounded corners=4pt] (-0.5, 7.8) rectangle (17.5, 10.2);
+\node[font=\small\sffamily\bfseries, anchor=north west, color=accentorange!80] at (-0.2, 10.1) {Бизнес-слой};
+
+\node[lblock=layerbiz] (b1) at (2, 8.8) {Продажи\\жилья};
+\node[lblock=layerbiz] (b2) at (5.5, 8.8) {Строительство\\объектов};
+\node[newblock] (b3) at (9, 8.8) {ИИ-закупки\\(автотендер)};
+\node[lblock=layerbiz] (b4) at (12.5, 8.8) {Управление\\персоналом};
+\node[newblock] (b5) at (16, 8.8) {Предиктивная\\аналитика};
+
+% --- Прикладной слой ---
+\fill[layerapp, rounded corners=4pt] (-0.5, 4.8) rectangle (17.5, 7.2);
+\node[font=\small\sffamily\bfseries, anchor=north west, color=samoletblue!80] at (-0.2, 7.1) {Прикладной слой};
+
+\node[lblock=layerapp] (a1) at (2, 5.8) {CRM-система};
+\node[lblock=layerapp] (a2) at (5.5, 5.8) {10D + ИИ-модули\\(стройконтроль)};
+\node[lblock=layerapp] (a3) at (9, 5.8) {ТУРБО ERP\\+ бот-тендер};
+\node[newblock] (a4) at (12.5, 5.8) {Мобильное\\приложение};
+\node[lblock=layerapp] (a5) at (16, 5.8) {HR + ИИ\\подбор кадров};
+
+% --- Слой данных ---
+\fill[layerdata, rounded corners=4pt] (-0.5, 1.8) rectangle (17.5, 4.2);
+\node[font=\small\sffamily\bfseries, anchor=north west, color=accentgreen!80] at (-0.2, 4.1) {Слой данных};
+
+\node[lblock=layerdata] (d1) at (2, 2.8) {Клиентская\\база};
+\node[lblock=layerdata] (d2) at (5.5, 2.8) {Данные\\стройплощадок};
+\node[newblock] (d3) at (9, 2.8) {Data Lake\\(централиз.)};
+\node[lblock=layerdata] (d4) at (12.5, 2.8) {Финансовые\\данные};
+\node[newblock] (d5) at (16, 2.8) {ИИ-модели\\(ML Pipeline)};
+
+% --- Инфраструктурный слой ---
+\fill[layerinfra, rounded corners=4pt] (-0.5, -1.2) rectangle (17.5, 1.2);
+\node[font=\small\sffamily\bfseries, anchor=north west, color=gray!70] at (-0.2, 1.1) {Инфраструктурный слой};
+
+\node[lblock=layerinfra] (i1) at (2, -0.1) {ЦОД~1\\(основной)};
+\node[lblock=layerinfra] (i2) at (5.5, -0.1) {ЦОД~2\\(резервный)};
+\node[newblock] (i3) at (9, -0.1) {Гибридное\\облако};
+\node[newblock] (i4) at (12.5, -0.1) {Единый\\API-шлюз};
+\node[lblock=layerinfra] (i5) at (16, -0.1) {Сеть +\\мониторинг};
+
+% Вертикальные связи (выборочные)
+\foreach \x in {1,2,4} {
+  \draw[gray!40, thick, -{Stealth[length=2mm]}] (b\x.south) -- (a\x.north);
+  \draw[gray!40, thick, -{Stealth[length=2mm]}] (a\x.south) -- (d\x.north);
+}
+\draw[accentgreen!60, thick, -{Stealth[length=2mm]}] (b3.south) -- (a3.north);
+\draw[accentgreen!60, thick, -{Stealth[length=2mm]}] (a3.south) -- (d3.north);
+\draw[accentgreen!60, thick, -{Stealth[length=2mm]}] (b5.south) -- (a5.north);
+\draw[accentgreen!60, thick, -{Stealth[length=2mm]}] (a5.south) -- (d5.north);
+\draw[accentgreen!60, thick, -{Stealth[length=2mm]}] (a4.south) -- (d4.north);
+
+% Горизонтальные связи
+\draw[samoletblue!30, thick, <->] (a1.east) -- (a2.west);
+\draw[accentgreen!50, thick, <->] (a2.east) -- (a3.west);
+\draw[accentgreen!50, thick, <->] (a3.east) -- (a4.west);
+\draw[samoletblue!30, thick, <->] (a4.east) -- (a5.west);
+
+% Новые элементы обозначены жирным шрифтом и зелёной обводкой
+\node[font=\footnotesize\sffamily\itshape, color=accentgreen!80] at (8.5, -1.8) {Новые элементы выделены зелёной обводкой и жирным шрифтом};
+
+\end{tikzpicture}
+\caption{Метамодель целевой ИТ-архитектуры TO BE}
+\label{fig:meta_tobe}
+\end{figure}
+
+\subsection{Ключевые изменения по слоям}
+
+\begin{table}[H]
+\centering
+\caption{Изменения ИТ-архитектуры по слоям: AS IS $\to$ TO BE}
+\label{tab:layers_change}
+\small
+\begin{tabularx}{\textwidth}{|l|X|X|}
+\hline
+\rowcolor{samoletlight}
+\textbf{Слой} & \textbf{AS IS} & \textbf{TO BE} \\
+\hline
+Бизнес & Ручные закупки, отчёты & ИИ-автотендер, предиктивная аналитика \\
+\hline
+Приложения & 10D + ERP (без мобильности) & 10D + ИИ + мобильное приложение + бот \\
+\hline
+Данные & 2,4 ПБ в SAN (фрагментировано) & Централизованный data-lake + ML Pipeline \\
+\hline
+Инфраструктура & 2 ЦОД (Hitachi/Huawei, 99,95\%) & + гибридное облако + единый API-шлюз (99,99\%) \\
+\hline
+\end{tabularx}
+\end{table}
+
+Переход от текущей к целевой архитектуре предусматривает сохранение ядра (10D и ТУРБО ERP) при надстройке нового слоя: мобильное приложение, ИИ-модули и централизованный data-lake. Это позволяет минимизировать риски миграции и обеспечить поэтапное внедрение.
+
+\subsection{Архитектурные принципы целевого состояния}
+
+При проектировании целевой ИТ-архитектуры были использованы следующие принципы:
+
+\begin{enumerate}[leftmargin=20pt]
+  \item \textbf{Принцип эволюционности:} сохранение инвестиций в существующие системы (10D, ТУРБО ERP) с постепенным наращиванием функциональности через ИИ-модули и интеграции.
+  \item \textbf{Принцип централизации данных:} единый data-lake как «единая версия правды» для всех подразделений и юридических лиц.
+  \item \textbf{Принцип мобильности:} доступ ко всем критичным функциям с мобильных устройств для линейного персонала на стройплощадках.
+  \item \textbf{Принцип интеллектуализации:} встраивание ИИ на каждом уровне архитектуры --- от распознавания изображений до предиктивной аналитики управленческих решений.
+  \item \textbf{Принцип отказоустойчивости:} повышение SLA с 99,95\% до 99,99\% за счёт гибридного облака и географической распределённости.
+  \item \textbf{Принцип масштабируемости:} возможность выделения дополнительных мощностей за 1--4 часа (вместо текущих 2--4 недель) через облачные ресурсы.
+\end{enumerate}
+
+\subsection{Миграционная модель (MEA)}
+
+Переход от AS IS к TO BE осуществляется по модели <<параллельного запуска>>: новые компоненты развёртываются параллельно с существующими, затем постепенно переключаются потоки данных. Это обеспечивает бесперебойную работу на протяжении всего периода миграции.
+
+Ключевые риски миграции и меры их митигации:
+
+\begin{table}[H]
+\centering
+\caption{Риски миграции и меры митигации}
+\label{tab:risks}
+\small
+\begin{tabularx}{\textwidth}{|X|l|X|}
+\hline
+\rowcolor{samoletlight}
+\textbf{Риск} & \textbf{Вероятность} & \textbf{Митигация} \\
+\hline
+Потеря данных при миграции в data-lake & Средняя & Полное резервное копирование, валидация контрольных сумм \\
+\hline
+Отторжение ИИ-инструментов персоналом & Высокая & Программа обучения «Цифровой прораб», мотивация через KPI \\
+\hline
+Несовместимость legacy-API & Средняя & Единый API-шлюз с адаптерами для legacy-систем \\
+\hline
+Превышение бюджета & Средняя & Резерв 15\%, поэтапное финансирование \\
+\hline
+Сбои в работе 10D при интеграции ИИ & Низкая & Песочница для тестирования, canary-развёртывание \\
+\hline
+\end{tabularx}
+\end{table}
+
+\newpage
+
+% ============================================================
+%  РАЗДЕЛ 11. ДИАГРАММА ГАНТА
+% ============================================================
+\section{Диаграмма Ганта}
+
+План реализации проекта цифровой трансформации разделён на три этапа с горизонтом планирования до 2027 года. Диаграмма Ганта представлена на рисунке~\ref{fig:gantt}.
+
+\begin{figure}[H]
+\centering
+\begin{ganttchart}[
+  x unit=7mm,
+  y unit title=8mm,
+  y unit chart=7mm,
+  title height=1,
+  bar height=0.6,
+  bar top shift=0.2,
+  vgrid={*{3}{draw=none}, dotted},
+  hgrid,
+  title label font=\small\sffamily\bfseries,
+  bar label font=\small\sffamily,
+  group label font=\small\sffamily\bfseries,
+  milestone label font=\small\sffamily\itshape,
+  bar/.append style={fill=samoletblue!60, draw=samoletblue},
+  bar incomplete/.append style={fill=samoletblue!20},
+  group/.append style={draw=samoletdark, fill=samoletdark!30},
+  milestone/.append style={fill=accentred, draw=accentred!80},
+  today=4,
+  today label=Сейчас,
+  today label font=\tiny\sffamily\itshape,
+  today rule/.style={draw=accentred, thick, dashed}
+]{1}{18}
+
+\gantttitle{2026}{12} \gantttitle{2027}{6} \\
+\gantttitlelist{1,...,12}{1} \gantttitlelist{1,...,6}{1} \\
+
+% Этап 1
+\ganttgroup{Этап 1: Краткосрочный}{1}{6} \\
+\ganttbar{Централизация data-lake}{1}{4} \\
+\ganttbar{Интеграция ИИ в 10D}{2}{5} \\
+\ganttbar{Миграция 50\% legacy}{3}{6} \\
+\ganttbar{Разработка MVP (моб. прил.)}{1}{3} \\
+\ganttmilestone{Запуск MVP пилот}{3} \\
+
+% Этап 2
+\ganttgroup{Этап 2: Среднесрочный}{7}{12} \\
+\ganttbar{Внедрение ITFM}{7}{9} \\
+\ganttbar{Масштабирование моб. прил.}{7}{10} \\
+\ganttbar{ИИ-прогнозы задержек}{8}{11} \\
+\ganttbar{Бот-тендер}{9}{12} \\
+\ganttmilestone{Полное развёртывание}{12} \\
+
+% Этап 3
+\ganttgroup{Этап 3: Долгосрочный}{13}{18} \\
+\ganttbar{Полный ИИ-стек (RPA)}{13}{16} \\
+\ganttbar{Гибридное облако}{13}{17} \\
+\ganttbar{Предиктивная аналитика v2}{15}{18} \\
+\ganttmilestone{Целевая архитектура}{18}
+
+% Links
+\ganttlink{elem4}{elem5}
+\ganttlink{elem5}{elem8}
+\ganttlink{elem10}{elem11}
+\ganttlink{elem11}{elem12}
+
+\end{ganttchart}
+\caption{Диаграмма Ганта: план реализации проекта (2026--2027)}
+\label{fig:gantt}
+\end{figure}
+
+\subsection{Описание этапов}
+
+\textbf{Этап 1 (Q1--Q2 2026):} основной фокус на создании фундамента --- централизация data-lake для консолидации данных из всех юнитов, интеграция первых ИИ-модулей в платформу 10D для стройконтроля, миграция 50\% legacy-систем в современную SAN-архитектуру, разработка и пилотирование MVP мобильного приложения. Ожидаемый эффект: снижение рутины на 25\%, рост доступности до 99,99\%.
+
+\textbf{Этап 2 (Q3--Q4 2026):} масштабирование --- внедрение ITFM для точного учёта ИТ-затрат по проектам, развёртывание мобильного приложения на всех стройплощадках, запуск ИИ-прогнозов задержек и бота для автоматизации тендеров. Ожидаемый эффект: экономия 15\% на операциях, автоматизация 70\% закупочных процедур.
+
+\textbf{Этап 3 (2027+):} завершение трансформации --- полный ИИ-стек с RPA для сквозной автоматизации, миграция в гибридное облако с масштабированием мощностей за 1--4 часа, запуск предиктивной аналитики второго поколения. Ожидаемый эффект: удвоение скорости циклов строительства и закупок.
+
+\newpage
+
+% ============================================================
+%  ROADMAP ПРОЕКТА
+% ============================================================
+\section{Roadmap проекта}
+
+Roadmap визуализирует стратегические потоки работ по кварталам, связывая бизнес-цели, продуктовые фичи и технологические инициативы в единую временну\'{ю} карту.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=0.78, every node/.style={transform shape}]
+
+\tikzset{
+  qheader/.style={
+    rectangle, rounded corners=2pt, draw=samoletblue!70, fill=samoletblue!15,
+    minimum height=9mm, minimum width=28mm, align=center,
+    font=\small\sffamily\bfseries
+  },
+  rlabel/.style={
+    rectangle, rounded corners=2pt, draw=#1!60, fill=#1!10,
+    minimum height=8mm, minimum width=22mm, align=center,
+    font=\scriptsize\sffamily\bfseries, text=#1!80
+  },
+  rbar/.style={
+    rectangle, rounded corners=3pt, draw=#1!50, fill=#1!18,
+    minimum height=8mm, align=center, font=\scriptsize\sffamily,
+    inner xsep=3pt
+  }
+}
+
+% Quarter headers
+\node[qheader] (q1) at (0, 0) {Q1 2026};
+\node[qheader] (q2) at (3.4, 0) {Q2 2026};
+\node[qheader] (q3) at (6.8, 0) {Q3 2026};
+\node[qheader] (q4) at (10.2, 0) {Q4 2026};
+\node[qheader] (q5) at (13.6, 0) {2027+};
+
+% --- Row labels ---
+\node[rlabel=accentorange, anchor=east] at (-1.8, -1.4) {Бизнес-цели};
+\node[rlabel=samoletblue, anchor=east] at (-1.8, -3.0) {Продукт};
+\node[rlabel=accentpurple, anchor=east] at (-1.8, -4.6) {Технологии};
+\node[rlabel=accentgreen, anchor=east] at (-1.8, -6.2) {Персонал};
+
+% --- Row 1: Бизнес-цели ---
+\node[rbar=accentorange, minimum width=28mm] at (1.7, -1.4) {Снижение рутины\\на 25\%};
+\node[rbar=accentorange, minimum width=28mm] at (5.1, -1.4) {Пилот на\\3 площадках};
+\node[rbar=accentorange, minimum width=28mm] at (8.5, -1.4) {Экономия 15\%\\на операциях};
+\node[rbar=accentorange, minimum width=28mm] at (11.9, -1.4) {Автоматизация\\70\% закупок};
+
+% --- Row 2: Продукт ---
+\node[rbar=samoletblue, minimum width=60mm] at (1.7, -3.0) {MVP: ИИ-фото + OCR + дашборд};
+\node[rbar=samoletblue, minimum width=28mm] at (6.8, -3.0) {Мобильное прил.\\v2.0};
+\node[rbar=samoletblue, minimum width=28mm] at (10.2, -3.0) {Бот-тендер\\v1.0};
+\node[rbar=samoletblue, minimum width=22mm] at (13.6, -3.0) {Предикт.\\аналитика v2};
+
+% --- Row 3: Технологии ---
+\node[rbar=accentpurple, minimum width=28mm] at (0, -4.6) {Централизация\\data-lake};
+\node[rbar=accentpurple, minimum width=28mm] at (3.4, -4.6) {Миграция 50\%\\legacy};
+\node[rbar=accentpurple, minimum width=28mm] at (6.8, -4.6) {ITFM\\внедрение};
+\node[rbar=accentpurple, minimum width=28mm] at (10.2, -4.6) {Единый\\API-шлюз};
+\node[rbar=accentpurple, minimum width=22mm] at (13.6, -4.6) {Гибридное\\облако};
+
+% --- Row 4: Персонал ---
+\node[rbar=accentgreen, minimum width=60mm] at (1.7, -6.2) {Программа «Цифровой прораб» (20\%)};
+\node[rbar=accentgreen, minimum width=28mm] at (6.8, -6.2) {Масштабирование\\обучения};
+\node[rbar=accentgreen, minimum width=50mm] at (11.9, -6.2) {Цифровые амбассадоры\\на всех площадках};
+
+% Horizontal separator lines
+\foreach \y in {-0.7, -2.2, -3.8, -5.4} {
+  \draw[gray!20] (-3, \y) -- (15.2, \y);
+}
+
+\end{tikzpicture}
+\caption{Roadmap проекта цифровой трансформации ГК «Самолет»}
+\label{fig:roadmap}
+\end{figure}
+
+Roadmap отражает четыре стратегических потока:
+
+\begin{itemize}[leftmargin=20pt]
+  \item \textbf{Бизнес-цели} --- квартальные целевые показатели эффективности, привязанные к KPI руководства.
+  \item \textbf{Продукт} --- поэтапное развитие ИИ-платформы от MVP до полнофункциональной системы с предиктивной аналитикой.
+  \item \textbf{Технологии} --- инфраструктурные инициативы: data-lake, миграция legacy, API-шлюз, гибридное облако.
+  \item \textbf{Персонал} --- программы обучения и управления изменениями, обеспечивающие принятие новых инструментов.
+\end{itemize}
+
+\newpage
+
+% ============================================================
+%  PRODUCT BACKLOG
+% ============================================================
+\section{Product Backlog}
+
+Product Backlog систематизирует все задачи проекта с приоритезацией по методу MoSCoW (Must / Should / Could / Won't). Backlog является живым документом, который обновляется по итогам каждого спринта.
+
+\subsection{Backlog: ИИ-платформа «Самолет.ИИ-Стройконтроль»}
+
+\begin{table}[H]
+\centering
+\caption{Product Backlog с приоритизацией MoSCoW}
+\label{tab:backlog}
+\small
+\begin{tabularx}{\textwidth}{|c|l|X|l|l|}
+\hline
+\rowcolor{samoletlight}
+\textbf{ID} & \textbf{Приоритет} & \textbf{User Story / Задача} & \textbf{Оценка} & \textbf{Спринт} \\
+\hline
+\multicolumn{5}{|l|}{\cellcolor{accentred!12}\textbf{Must Have --- критически необходимо}} \\
+\hline
+B-01 & Must & Как прораб, я хочу сфотографировать дефект и получить автоматическую классификацию & 13 SP & S1--S2 \\
+\hline
+B-02 & Must & Как прораб, я хочу сканировать накладную и автоматически загрузить данные в ERP & 8 SP & S2--S3 \\
+\hline
+B-03 & Must & Как прораб, я хочу видеть дашборд с KPI объекта на мобильном телефоне & 8 SP & S1--S3 \\
+\hline
+B-04 & Must & Как менеджер, я хочу чтобы заявка на закупку формировалась автоматически из дефекта & 13 SP & S3--S4 \\
+\hline
+B-05 & Must & Как архитектор, я хочу централизованный data-lake для консолидации данных юнитов & 21 SP & S1--S4 \\
+\hline
+\multicolumn{5}{|l|}{\cellcolor{accentorange!12}\textbf{Should Have --- важно}} \\
+\hline
+B-06 & Should & Как менеджер по закупкам, я хочу бота, который подбирает поставщиков по критериям & 13 SP & S5--S6 \\
+\hline
+B-07 & Should & Как руководитель, я хочу получать push-уведомления о критических отклонениях & 5 SP & S4 \\
+\hline
+B-08 & Should & Как фин. директор, я хочу видеть ИТ-затраты по проектам через ITFM & 13 SP & S5--S7 \\
+\hline
+B-09 & Should & Как прораб, я хочу электронную приёмку с ЭЦП вместо бумажных актов & 8 SP & S6--S7 \\
+\hline
+B-10 & Should & Как инженер, я хочу чтобы данные с дронов автоматически попадали в 10D & 13 SP & S5--S7 \\
+\hline
+\multicolumn{5}{|l|}{\cellcolor{accentgreen!12}\textbf{Could Have --- желательно}} \\
+\hline
+B-11 & Could & Как руководитель, я хочу предиктивный прогноз задержек с точностью 85\% & 21 SP & S8--S10 \\
+\hline
+B-12 & Could & Как HR, я хочу ИИ-помощника для подбора кадров на стройплощадки & 13 SP & S9--S10 \\
+\hline
+B-13 & Could & Как менеджер, я хочу RPA-ботов для автоматической сверки документов & 13 SP & S10--S12 \\
+\hline
+B-14 & Could & Как архитектор, я хочу автомасштабирование через гибридное облако & 21 SP & S10--S12 \\
+\hline
+\multicolumn{5}{|l|}{\cellcolor{gray!10}\textbf{Won't Have (в этом релизе) --- отложено}} \\
+\hline
+B-15 & Won't & Полная замена ТУРБО ERP на собственную систему & --- & Бэклог \\
+\hline
+B-16 & Won't & AR-визуализация BIM-модели на площадке & --- & Бэклог \\
+\hline
+\end{tabularx}
+\end{table}
+
+\subsection{Распределение Backlog по спринтам}
+
+Проект реализуется двухнедельными спринтами (S1--S12). На рисунке~\ref{fig:backlog_flow} показано распределение задач по спринтам и потокам.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=0.78, every node/.style={transform shape}]
+
+\tikzset{
+  sbox/.style={
+    rectangle, rounded corners=3pt, draw=#1!60, fill=#1!12,
+    minimum height=9mm, minimum width=22mm, align=center,
+    font=\scriptsize\sffamily
+  },
+  shead/.style={
+    rectangle, rounded corners=2pt, draw=samoletblue!50, fill=samoletblue!8,
+    minimum height=7mm, minimum width=18mm, align=center,
+    font=\scriptsize\sffamily\bfseries
+  }
+}
+
+% Sprint headers
+\foreach \s/\x in {S1/0, S2/2, S3/4, S4/6, S5/8, S6/10, S7/12, S8/14, S9/16} {
+  \node[shead] at (\x, 0) {\s};
+}
+
+% Must Have row
+\node[font=\scriptsize\sffamily\bfseries, color=accentred!70, anchor=east] at (-1.5, -1) {Must};
+\node[sbox=accentred, minimum width=42mm] at (1, -1) {B-01: ИИ-фото};
+\node[sbox=accentred, minimum width=42mm] at (5, -1) {B-03: Дашборд};
+\node[sbox=accentred, minimum width=22mm] at (3, -1.9) {B-02: OCR};
+\node[sbox=accentred, minimum width=42mm] at (7, -1.9) {B-04: Авто-заявка};
+\node[sbox=accentred, minimum width=62mm] at (3, -2.8) {B-05: Data-lake};
+
+% Should Have row
+\node[font=\scriptsize\sffamily\bfseries, color=accentorange!70, anchor=east] at (-1.5, -4) {Should};
+\node[sbox=accentorange] at (6, -4) {B-07: Push};
+\node[sbox=accentorange, minimum width=42mm] at (9, -4) {B-06: Бот-тендер};
+\node[sbox=accentorange, minimum width=62mm] at (10, -4.9) {B-08: ITFM};
+\node[sbox=accentorange, minimum width=42mm] at (11, -5.8) {B-09: ЭЦП};
+
+% Could Have row
+\node[font=\scriptsize\sffamily\bfseries, color=accentgreen!70, anchor=east] at (-1.5, -7) {Could};
+\node[sbox=accentgreen, minimum width=42mm] at (15, -7) {B-11: Предиктив.};
+\node[sbox=accentgreen, minimum width=42mm] at (15, -7.9) {B-12: ИИ HR};
+
+% Separator lines
+\draw[gray!20] (-2.5, -3.4) -- (17, -3.4);
+\draw[gray!20] (-2.5, -6.4) -- (17, -6.4);
+
+% Phase labels at bottom
+\draw[decorate, decoration={brace, amplitude=4pt, mirror}, accentred!60, thick] (-1, -3.1) -- (7, -3.1) node[midway, below=5pt, font=\scriptsize\sffamily\color{accentred!70}] {Этап 1: MVP};
+\draw[decorate, decoration={brace, amplitude=4pt, mirror}, accentorange!60, thick] (7.5, -6.1) -- (13, -6.1) node[midway, below=5pt, font=\scriptsize\sffamily\color{accentorange!70}] {Этап 2: Масштабирование};
+\draw[decorate, decoration={brace, amplitude=4pt, mirror}, accentgreen!60, thick] (13.5, -8.2) -- (17, -8.2) node[midway, below=5pt, font=\scriptsize\sffamily\color{accentgreen!70}] {Этап 3};
+
+\end{tikzpicture}
+\caption{Распределение Product Backlog по спринтам и приоритетам}
+\label{fig:backlog_flow}
+\end{figure}
+
+\subsection{Метрики Backlog}
+
+\begin{table}[H]
+\centering
+\caption{Сводные метрики Product Backlog}
+\label{tab:backlog_metrics}
+\begin{tabular}{lr}
+\toprule
+\textbf{Метрика} & \textbf{Значение} \\
+\midrule
+Всего User Stories & 16 \\
+Must Have & 5 (31\%) \\
+Should Have & 5 (31\%) \\
+Could Have & 4 (25\%) \\
+Won't Have & 2 (13\%) \\
+\midrule
+Общая оценка (без Won't) & 183 Story Points \\
+Velocity (план) & 18--22 SP / спринт \\
+Спринтов в проекте & 12 (24 недели) \\
+Размер команды & 8--10 человек \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Backlog управляется Product Owner из ИТ-блока (команда Алексея Семёнова) и пересматривается на Backlog Refinement каждые 2 недели. Приоритеты корректируются исходя из обратной связи пилотных площадок и изменения бизнес-контекста.
+
+\newpage
+
+% ============================================================
+%  РАЗДЕЛ 12. СМЕТА
+% ============================================================
+\section{Смета проекта}
+
+\subsection{Структура затрат}
+
+\begin{table}[H]
+\centering
+\caption{Смета проекта цифровой трансформации ИТ-архитектуры, млн руб.}
+\label{tab:budget}
+\small
+\begin{tabularx}{\textwidth}{|l|X|r|r|r|r|}
+\hline
+\rowcolor{samoletlight}
+\textbf{№} & \textbf{Статья затрат} & \textbf{Q1--Q2} & \textbf{Q3--Q4} & \textbf{2027} & \textbf{Итого} \\
+\hline
+1 & Серверное оборудование и облако & 45 & 30 & 60 & 135 \\
+\hline
+2 & Лицензии ПО (ИИ, ITFM, аналитика) & 25 & 35 & 20 & 80 \\
+\hline
+3 & Разработка (мобильное прил., боты, интеграции) & 60 & 80 & 50 & 190 \\
+\hline
+4 & Обучение персонала (20\% линейки) & 10 & 15 & 10 & 35 \\
+\hline
+5 & Консалтинг и внедрение & 20 & 25 & 15 & 60 \\
+\hline
+6 & Техническая поддержка & 10 & 15 & 20 & 45 \\
+\hline
+7 & Резерв (15\%) & 25 & 30 & 26 & 81 \\
+\hline
+\rowcolor{samoletlight}
+  & \textbf{ИТОГО} & \textbf{195} & \textbf{230} & \textbf{201} & \textbf{626} \\
+\hline
+\end{tabularx}
+\end{table}
+
+\subsection{Распределение бюджета}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+\def\R{3.5}
+
+% Разработка 30% (0° -> 109.3°)
+\fill[samoletblue!70, draw=white, line width=1.2pt] (0,0) -- (0:\R) arc (0:109.3:\R) -- cycle;
+\node[font=\scriptsize\sffamily, align=center, text=white] at (54.65:2.2) {Разработка\\30\%};
+
+% Оборудование 22% (109.3° -> 186.9°)
+\fill[accentorange!70, draw=white, line width=1.2pt] (0,0) -- (109.3:\R) arc (109.3:186.9:\R) -- cycle;
+\node[font=\scriptsize\sffamily, align=center, text=white] at (148.1:2.2) {Оборудование\\22\%};
+
+% Резерв 13% (186.9° -> 233.5°)
+\fill[gray!55, draw=white, line width=1.2pt] (0,0) -- (186.9:\R) arc (186.9:233.5:\R) -- cycle;
+\node[font=\scriptsize\sffamily, align=center, text=white] at (210.2:2.2) {Резерв\\13\%};
+
+% Лицензии 13% (233.5° -> 279.6°)
+\fill[accentpurple!70, draw=white, line width=1.2pt] (0,0) -- (233.5:\R) arc (233.5:279.6:\R) -- cycle;
+\node[font=\scriptsize\sffamily, align=center, text=white] at (256.55:2.2) {Лицензии\\13\%};
+
+% Консалтинг 10% (279.6° -> 314.1°)
+\fill[accentteal!70, draw=white, line width=1.2pt] (0,0) -- (279.6:\R) arc (279.6:314.1:\R) -- cycle;
+\node[font=\scriptsize\sffamily, align=center, text=white] at (296.85:2.3) {Консалтинг\\10\%};
+
+% Поддержка 7% (314.1° -> 340.0°)
+\fill[accentgreen!65, draw=white, line width=1.2pt] (0,0) -- (314.1:\R) arc (314.1:340.0:\R) -- cycle;
+\node[font=\scriptsize\sffamily, align=center, text=white] at (327.05:2.5) {Поддержка\\7\%};
+
+% Обучение 5% (340.0° -> 360°)
+\fill[accentred!55, draw=white, line width=1.2pt] (0,0) -- (340.0:\R) arc (340.0:360:\R) -- cycle;
+\node[font=\scriptsize\sffamily, align=center, text=white] at (350:2.6) {Обучение\\5\%};
+
+\end{tikzpicture}
+\caption{Распределение бюджета проекта по статьям затрат}
+\label{fig:budget_pie}
+\end{figure}
+
+Наибольшую долю бюджета составляет разработка (30\%), включающая создание мобильного приложения, ИИ-модулей, бот-тендера и интеграционных решений. Серверное оборудование и облачная инфраструктура составляют 22\% бюджета, что обусловлено необходимостью расширения мощностей для data-lake и гибридного облака.
+
+\newpage
+
+% ============================================================
+%  РАЗДЕЛ 13. КОМПАНИЯ TO BE
+% ============================================================
+\section{Как компания поменялась (TO BE)}
+
+\subsection{Процесс закупок и стройконтроля TO BE}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=0.82, every node/.style={transform shape}, node distance=5mm and 5mm]
+
+% Start
+\node[bpmn start] (start) {};
+\node[font=\tiny\sffamily, below=2mm of start] {Начало};
+
+% Tasks (automated)
+\node[bpmn task, right=7mm of start, fill=bpmngreen] (t1) {ИИ-фото:\\авто-заявка\\на материалы};
+\node[bpmn task, right=5mm of t1, fill=bpmngreen] (t2) {Автоматич.\\согласование\\(маршрутиз.)};
+
+% Gateway
+\node[bpmn gateway, right=5mm of t2] (g1) {?};
+
+\node[bpmn task, right=5mm of g1, fill=bpmngreen] (t3) {Бот-тендер:\\автоподбор\\поставщика};
+\node[bpmn task, right=5mm of t3, fill=bpmngreen] (t4) {Электронный\\контракт};
+
+% Second row
+\node[bpmn task, below=18mm of t4, fill=bpmngreen] (t5) {Автоматич.\\трекинг\\поставки};
+\node[bpmn task, left=5mm of t5, fill=bpmngreen] (t6) {ИИ-контроль\\качества\\(дрон + фото)};
+\node[bpmn task, left=5mm of t6, fill=bpmngreen] (t7) {Авто-генерация\\отчёта\\в 10D};
+
+% Gateway 2
+\node[bpmn gateway, left=5mm of t7] (g2) {?};
+
+\node[bpmn task, left=5mm of g2, fill=bpmngreen] (t8) {Цифровая\\приёмка\\(ЭЦП)};
+
+% End
+\node[bpmn end, left=7mm of t8] (endN) {};
+\node[font=\tiny\sffamily, below=2mm of endN] {Конец};
+
+% Arrows
+\draw[flow arrow] (start) -- (t1);
+\draw[flow arrow] (t1) -- (t2);
+\draw[flow arrow] (t2) -- (g1);
+\draw[flow arrow] (g1) -- (t3) node[midway, above, font=\tiny] {авто};
+% уточнение — стрелка ниже, текст рядом
+\draw[flow arrow] (g1.south) -- ++(0,-10mm) -| (t1.south);
+\node[font=\tiny\sffamily, anchor=north west, color=samoletdark] at ([shift={(2pt,-10mm)}]g1.south) {уточнение};
+\draw[flow arrow] (t3) -- (t4);
+\draw[flow arrow] (t4) -- (t5);
+\draw[flow arrow] (t5) -- (t6);
+\draw[flow arrow] (t6) -- (t7);
+\draw[flow arrow] (t7) -- (g2);
+\draw[flow arrow] (g2) -- (t8) node[midway, above, font=\tiny] {ок};
+% авто-пересъёмка — стрелка ниже, текст рядом
+\draw[flow arrow] (g2.south) -- ++(0,-10mm) -| (t6.south);
+\node[font=\tiny\sffamily, anchor=north west, color=samoletdark] at ([shift={(2pt,-10mm)}]g2.south) {авто-пересъёмка};
+\draw[flow arrow] (t8) -- (endN);
+
+% Annotation
+\node[font=\tiny\itshape\color{accentgreen}, below=3mm of t3, text width=30mm, align=center] {Всё автоматизировано:\\0\% ручного ввода};
+
+\end{tikzpicture}
+\caption{BPMN-диаграмма процесса закупок и стройконтроля TO BE}
+\label{fig:bpmn_tobe}
+\end{figure}
+
+\subsection{Сравнение AS IS vs TO BE}
+
+\begin{table}[H]
+\centering
+\caption{Сравнение ключевых метрик AS IS и TO BE}
+\label{tab:comparison}
+\begin{tabularx}{\textwidth}{|X|r|r|r|}
+\hline
+\rowcolor{samoletlight}
+\textbf{Метрика} & \textbf{AS IS} & \textbf{TO BE} & \textbf{Улучшение} \\
+\hline
+Цикл закупки (дни) & 21 & 10 & $-52\%$ \\
+\hline
+Ручной ввод данных (\% времени) & 30\% & 5\% & $-83\%$ \\
+\hline
+Время формирования отчёта & 4 часа & 15 мин & $-94\%$ \\
+\hline
+Доступность ИТ-систем & 99,95\% & 99,99\% & +0,04 п.п. \\
+\hline
+Автоматизация закупок & 30\% & 85\% & +55 п.п. \\
+\hline
+Выявление дефектов (стадия) & Приёмка & Ранняя & экономия 50--60\% \\
+\hline
+Обработка документов (OCR) & 0\% & 95\% & автоматически \\
+\hline
+Точность прогноза задержек & н/д & 85\% & новая возможность \\
+\hline
+\end{tabularx}
+\end{table}
+
+Переход к целевому состоянию обеспечивает кардинальное улучшение по всем ключевым метрикам: цикл закупки сокращается более чем вдвое, ручной ввод практически исключается, формирование отчётов ускоряется в 16 раз. Появляются принципиально новые возможности --- предиктивная аналитика и автоматическое распознавание дефектов.
+
+\newpage
+
+% ============================================================
+%  РАЗДЕЛ 14. ФИНАНСОВЫЙ РЕЗУЛЬТАТ
+% ============================================================
+\section{Финансовый результат}
+
+\subsection{Анализ инвестиций и экономии}
+
+\begin{table}[H]
+\centering
+\caption{Финансовая модель проекта, млн руб.}
+\label{tab:roi}
+\begin{tabular}{lrrrrr}
+\toprule
+\textbf{Показатель} & \textbf{2026 H1} & \textbf{2026 H2} & \textbf{2027} & \textbf{2028} & \textbf{Итого} \\
+\midrule
+Инвестиции (CAPEX) & 195 & 230 & 201 & 0 & 626 \\
+Операционная экономия & 50 & 120 & 350 & 500 & 1\,020 \\
+Сокращение потерь от брака & 20 & 50 & 100 & 150 & 320 \\
+Экономия на персонале & 15 & 40 & 80 & 120 & 255 \\
+\midrule
+\textbf{Совокупная экономия} & \textbf{85} & \textbf{210} & \textbf{530} & \textbf{770} & \textbf{1\,595} \\
+\textbf{Чистый эффект (нарастающий)} & $-110$ & $-130$ & $+199$ & $+969$ & \textbf{+969} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Графики ROI}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=140mm,
+  height=65mm,
+  ylabel={млн руб.},
+  xlabel={Период},
+  symbolic x coords={2026 H1, 2026 H2, 2027, 2028},
+  xtick=data,
+  ymin=-250, ymax=1100,
+  legend style={at={(0.02,0.98)}, anchor=north west, font=\small},
+  grid=major,
+  grid style={gray!20},
+  every axis plot/.append style={thick},
+  axis lines=left,
+  xticklabel style={font=\small\sffamily},
+  yticklabel style={font=\small\sffamily}
+]
+
+\addplot[color=accentred, mark=square*, mark size=2.5pt] coordinates
+  {(2026 H1, 195) (2026 H2, 425) (2027, 626) (2028, 626)};
+
+\addplot[color=accentgreen, mark=triangle*, mark size=2.5pt] coordinates
+  {(2026 H1, 85) (2026 H2, 295) (2027, 825) (2028, 1595)};
+
+\addplot[color=samoletblue, mark=*, mark size=2.5pt, dashed] coordinates
+  {(2026 H1, -110) (2026 H2, -130) (2027, 199) (2028, 969)};
+
+\legend{Инвестиции (кумулятивно), Экономия (кумулятивно), Чистый эффект}
+
+\draw[accentgreen!50, dashed, thin] (axis cs:2026 H2, 0) -- (axis cs:2027, 0);
+\node[font=\tiny\sffamily, color=accentgreen!80] at (axis cs:2027, -60) {Точка окупаемости};
+
+\end{axis}
+\end{tikzpicture}
+\caption{Кумулятивные инвестиции, экономия и чистый эффект проекта}
+\label{fig:roi}
+\end{figure}
+
+\subsection{Ключевые выводы}
+
+\begin{itemize}[leftmargin=20pt]
+  \item \textbf{Общий объём инвестиций:} 626~млн~руб. за период 2026--2027.
+  \item \textbf{Совокупная экономия к 2028:} 1\,595~млн~руб. (операционная экономия + снижение потерь + оптимизация ФОТ).
+  \item \textbf{Точка окупаемости:} первое полугодие 2027 года (менее 1,5 лет).
+  \item \textbf{ROI к концу 2028:} $969 / 626 \times 100\% \approx 155\%$.
+  \item \textbf{Payback period:} $\sim$18 месяцев.
+\end{itemize}
+
+Проект экономически обоснован: при относительно умеренных инвестициях (менее 1\% от годовой выручки компании) достигается значительная экономия, а срок окупаемости укладывается в 1,5 года. В условиях текущего кризиса ликвидности это особенно важно --- проект позволяет сократить операционные расходы и повысить эффективность использования ограниченных ресурсов.
+
+\subsection{Анализ чувствительности}
+
+Для оценки устойчивости финансовой модели проведён анализ чувствительности ключевых параметров:
+
+\begin{table}[H]
+\centering
+\caption{Анализ чувствительности финансовой модели}
+\label{tab:sensitivity}
+\small
+\begin{tabularx}{\textwidth}{|X|r|r|r|}
+\hline
+\rowcolor{samoletlight}
+\textbf{Сценарий} & \textbf{Инвестиции} & \textbf{Экономия к 2028} & \textbf{ROI} \\
+\hline
+Базовый & 626 млн & 1\,595 млн & 155\% \\
+\hline
+Перерасход бюджета +20\% & 751 млн & 1\,595 млн & 112\% \\
+\hline
+Экономия ниже на 30\% & 626 млн & 1\,117 млн & 78\% \\
+\hline
+Задержка внедрения на 6 мес. & 626 млн & 1\,210 млн & 93\% \\
+\hline
+Пессимистичный (всё вместе) & 751 млн & 940 млн & 25\% \\
+\hline
+\end{tabularx}
+\end{table}
+
+Даже в пессимистичном сценарии (одновременный перерасход бюджета на 20\%, снижение экономии на 30\% и задержка внедрения на 6 месяцев) проект остаётся экономически целесообразным с положительным ROI 25\%. Это подтверждает устойчивость инвестиционного решения и оправдывает его реализацию даже в условиях высокой неопределённости.
+
+% ============================================================
+%  ЗАКЛЮЧЕНИЕ
+% ============================================================
+\section*{Заключение}
+\addcontentsline{toc}{section}{Заключение}
+
+В рамках данного проекта проведён комплексный анализ ИТ-архитектуры ГК «Самолет» в условиях глубокого финансового кризиса 2026 года. Исследование охватило все ключевые аспекты: от анализа внешней среды (PESTLE, SWOT) и организационной структуры до детального моделирования бизнес-процессов и проектирования целевой ИТ-архитектуры.
+
+Основные результаты работы:
+
+\begin{enumerate}[leftmargin=20pt]
+  \item \textbf{Диагностика текущего состояния:} выявлены критические узкие места --- фрагментация 25+ интеграций, ручной ввод данных на стройплощадках (до 30\% рабочего времени), отсутствие мобильных инструментов и сквозного ИИ.
+
+  \item \textbf{Проектирование решения:} предложена мобильная ИИ-платформа «Самолет.ИИ-Стройконтроль», включающая ИИ-распознавание дефектов, OCR документов, бот-тендер и мобильные дашборды. Разработан MVP и определён стек технологий.
+
+  \item \textbf{Целевая архитектура TO BE:} спроектирована четырёхслойная метамодель с новыми элементами --- data-lake, гибридное облако, единый API-шлюз, ML Pipeline. Обеспечен переход от 99,95\% до 99,99\% доступности.
+
+  \item \textbf{Экономическое обоснование:} проект требует инвестиций в 626~млн~руб. и окупается за 18 месяцев при ROI 155\%. Даже в пессимистичном сценарии ROI остаётся положительным (25\%).
+\end{enumerate}
+
+Проект особенно актуален в контексте текущего кризиса компании: цифровая трансформация позволяет сократить операционные расходы на 15\%, ускорить бизнес-циклы вдвое и обеспечить прозрачность управления --- критически важные факторы для восстановления доверия инвесторов и дольщиков.
+
+\newpage
+
+% ============================================================
+%  ПРИЛОЖЕНИЯ
+% ============================================================
+\appendix
+\section{Приложение А. Исходные данные для PESTLE-анализа}
+
+\begin{longtable}{|p{25mm}|p{55mm}|p{60mm}|}
+\hline
+\rowcolor{samoletlight}
+\textbf{Фактор} & \textbf{Описание} & \textbf{Источник} \\
+\hline
+\endfirsthead
+\hline
+\rowcolor{samoletlight}
+\textbf{Фактор} & \textbf{Описание} & \textbf{Источник} \\
+\hline
+\endhead
+Political & Изъятие ЖК «Квартал Марьино» по иску Генпрокуратуры, связанному с Rietumu Banka & monocle.ru (16.02.2026) \\
+\hline
+Economic & Ключевая ставка ЦБ РФ 21\%, падение спроса на жильё 30--40\% & smart-lab.ru \\
+\hline
+Social & Иски дольщиков по ЖК «Новое Колпино» и «Курортный квартал» & vedomosti.ru (22.08.2025) \\
+\hline
+Technological & Централизация ИТ-блока, платформа 10D, 25+ интеграций & ict-online.ru, comnews.ru \\
+\hline
+Legal & 214-ФЗ, расследования по мошенничеству (закрыты прокуратурой) & repost.news \\
+\hline
+Environmental & Требования к энергоэффективности зданий класса A & стандарты РФ \\
+\hline
+\end{longtable}
+
+\section{Приложение Б. Сравнительный анализ ИТ-решений}
+
+\begin{longtable}{|p{30mm}|p{35mm}|p{35mm}|p{35mm}|}
+\hline
+\rowcolor{samoletlight}
+\textbf{Характеристика} & \textbf{10D (текущая)} & \textbf{1С:ERP + BIM} & \textbf{SAP S/4HANA} \\
+\hline
+\endfirsthead
+\hline
+\rowcolor{samoletlight}
+\textbf{Характеристика} & \textbf{10D (текущая)} & \textbf{1С:ERP + BIM} & \textbf{SAP S/4HANA} \\
+\hline
+\endhead
+Специализация & Девелопмент & Универсальная & Универсальная \\
+\hline
+Стоимость внедрения & Уже внедрена & 50--100 млн руб. & 200--500 млн руб. \\
+\hline
+ИИ-возможности & Начальные & Ограниченные & Развитые \\
+\hline
+Мобильность & Низкая & Средняя & Высокая \\
+\hline
+Риск миграции & Минимальный & Высокий (1--2 года) & Очень высокий (2--3 года) \\
+\hline
+Импортозамещение & Российская & Российская & Иностранная (риски) \\
+\hline
+\textbf{Решение} & \multicolumn{3}{l|}{\textbf{Модернизация 10D + ИИ-надстройка (оптимальный баланс)} } \\
+\hline
+\end{longtable}
+
+\section{Приложение В. Календарный план работ (роадмап)}
+
+\begin{longtable}{|c|p{40mm}|p{30mm}|p{25mm}|p{30mm}|}
+\hline
+\rowcolor{samoletlight}
+\textbf{№} & \textbf{Задача} & \textbf{Ответственный} & \textbf{Срок} & \textbf{Результат} \\
+\hline
+\endfirsthead
+\hline
+\rowcolor{samoletlight}
+\textbf{№} & \textbf{Задача} & \textbf{Ответственный} & \textbf{Срок} & \textbf{Результат} \\
+\hline
+\endhead
+1 & Аудит текущей ИТ-архитектуры & ИТ-блок (Семёнов А.) & Фев 2026 & Отчёт AS IS \\
+\hline
+2 & Проектирование data-lake & Архитектор данных & Фев--мар 2026 & Техпроект \\
+\hline
+3 & Разработка MVP моб. приложения & Команда разработки & Фев--апр 2026 & MVP v1.0 \\
+\hline
+4 & Обучение ИИ-модели (дефекты) & Data Science & Мар--апр 2026 & Модель YOLOv8 \\
+\hline
+5 & Пилот на 3 площадках & Проектный офис & Апр--май 2026 & Пилот-отчёт \\
+\hline
+6 & Миграция 50\% legacy в SAN & Инфраструктура & Мар--июн 2026 & Миграция \\
+\hline
+7 & Внедрение ITFM & Финансовый блок & Июл--сен 2026 & ITFM-система \\
+\hline
+8 & Масштабирование на все площадки & Проектный офис & Июл--окт 2026 & Массовый запуск \\
+\hline
+9 & Разработка бот-тендера & Команда разработки & Сен--дек 2026 & Бот v1.0 \\
+\hline
+10 & ИИ-прогнозы задержек & Data Science & Авг--ноя 2026 & ML-модель \\
+\hline
+11 & Внедрение RPA & Автоматизация & Янв--апр 2027 & RPA-боты \\
+\hline
+12 & Миграция в гибридное облако & Инфраструктура & Янв--май 2027 & Облачная среда \\
+\hline
+13 & Предиктивная аналитика v2 & Data Science & Мар--июн 2027 & ML v2.0 \\
+\hline
+14 & Финальная оценка эффективности & Проектный офис & Июн 2027 & Итоговый отчёт \\
+\hline
+\end{longtable}
+
+\section{Приложение Г. Детальный расчёт экономии}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{|p{50mm}|r|r|p{40mm}|}
+\hline
+\rowcolor{samoletlight}
+\textbf{Статья экономии} & \textbf{Текущие затраты, млн/год} & \textbf{Экономия, \%} & \textbf{Обоснование} \\
+\hline
+Ручной ввод данных (ФОТ) & 180 & 35\% & ИИ + OCR \\
+\hline
+Потери от брака и переделок & 400 & 25\% & Раннее выявление дефектов \\
+\hline
+Избыточные закупки & 300 & 15\% & Оптимизация тендеров \\
+\hline
+Штрафы за просрочки & 200 & 20\% & Предиктивная аналитика \\
+\hline
+Поддержка legacy-систем & 100 & 40\% & Миграция и консолидация \\
+\hline
+\rowcolor{samoletlight}
+\textbf{ИТОГО} & \textbf{1\,180} & --- & \textbf{$\sim$500 млн/год} \\
+\hline
+\end{tabular}
+\end{table}
+
+\newpage
+
+% ============================================================
+%  СПИСОК ИСТОЧНИКОВ
+% ============================================================
+\renewcommand{\refname}{Список источников}
+\begin{thebibliography}{99}
+
+\bibitem{monocle2026} Просадка «Самолета» // Monocle. --- 2026. --- 16 февр. --- URL: \url{https://monocle.ru/monocle/2026/08/prosadka-samoleta/}
+
+\bibitem{repost2026} Прокуратура прекратила расследование в отношении ГК «Самолет» // Repost.news. --- 2026. --- URL: \url{https://repost.news/news/96502}
+
+\bibitem{vedomosti2025} Топ-менеджерам петербургской структуры «Самолета» грозит до 10 лет // Ведомости. --- 2025. --- 22 авг. --- URL: \url{https://www.vedomosti.ru/realty/articles/2025/08/22/1133405}
+
+\bibitem{smartlab2026} Что происходит с ГК «Самолет»? Анализ причин кризиса // Smart-Lab. --- 2026. --- URL: \url{https://smart-lab.ru/blog/1263596.php}
+
+\bibitem{finbazar2026} Кризис ГК «Самолет»: акции рухнули, иски дольщиков // Финбазар. --- 2026. --- URL: \url{https://finbazar.ru/post/321105}
+
+\bibitem{devmedia2026} Самолет приземлился на дозаправку. Что ждет компанию и её дольщиков // Development Media. --- 2026. --- 5 февр. --- URL: \url{https://developmentmedia.ru/2026/02/05/samolet-prizemlilsya}
+
+\bibitem{ict2025} «Самолет» централизует ИТ-блок для создания единой цифровой платформы // ICT-Online. --- 2025. --- URL: \url{https://ict-online.ru/news/Samolet-tsentralizuyet-IT-blok}
+
+\bibitem{comnews2024} Группа «Самолет» построила отказоустойчивую корпоративную ИТ-инфраструктуру // ComNews. --- 2024. --- 4 апр. --- URL: \url{https://www.comnews.ru/content/232444}
+
+\bibitem{ptmk2024} Группа «Самолет» внедрит единую информационную систему // ПТМК. --- 2024. --- URL: \url{https://www.ptmk.ru/samolet/}
+
+\bibitem{tadviser2025} Проекты на базе ИИ в Группе компаний «Самолет» // TAdviser. --- 2025. --- URL: \url{https://www.tadviser.ru}
+
+\bibitem{samolet_ir} Корпоративное управление группы компаний // ГК «Самолет». --- URL: \url{https://samolet.ru/investors/management/}
+
+\bibitem{smartsmi2025} ГК «Самолет» намерена увеличить свою долю // Smart-SMI. --- 2025. --- URL: \url{https://smart-smi.ru/single/2841642}
+
+\bibitem{wiki_samolet} Группа «Самолет» // Википедия. --- URL: \url{https://ru.wikipedia.org/wiki/Группа_«Самолет»}
+
+\bibitem{ratings2026} ГК «Самолет»: рейтинг с A+.ru до A.ru // Рейтинговое агентство. --- 2026. --- 12 февр. --- URL: \url{https://ratings.ru/ratings/press-releases/Samolet-RA-120226/}
+
+\bibitem{mk2026} «Самолет» попал в зону турбулентности // Московский комсомолец. --- 2026. --- 16 февр. --- URL: \url{https://www.mk.ru/realestate/2026/02/16/samolet}
+
+\end{thebibliography}
+
+\end{document}
