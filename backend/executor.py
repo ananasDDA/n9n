@@ -88,6 +88,20 @@ def _eval_condition(condition: str, current: str) -> bool:
     return bool(cur.strip())
 
 
+def _get_connected_knowledge(node_id: str, edges: list[dict], nodes_by_id: dict, steps_outputs: dict[str, str]) -> list[str]:
+    """Собирает контент из Knowledge нод, подключенных к агенту через context handle."""
+    context_parts = []
+    for e in edges:
+        if e.get("target") == node_id and e.get("targetHandle") == "context":
+            source_id = e.get("source")
+            source_node = nodes_by_id.get(source_id)
+            if source_node and source_node.get("type") == "knowledge":
+                content = steps_outputs.get(source_id, "")
+                if content:
+                    context_parts.append(content[:8000])
+    return context_parts
+
+
 def _run_node(node: dict, current: str, steps_outputs: dict[str, str], edges: list[dict], nodes_by_id: dict) -> tuple[str, bool | None]:
     """Выполняет одну ноду. Возвращает (output, condition_result | None)."""
     nid = node["id"]
@@ -96,19 +110,36 @@ def _run_node(node: dict, current: str, steps_outputs: dict[str, str], edges: li
 
     if ntype == "trigger":
         return (current or "(нет входа)", None)
+
     if ntype == "knowledge":
         docs = data.get("documents")
-        if isinstance(docs, list):
+        if isinstance(docs, list) and docs:
             return ("\n\n".join(str(d) for d in docs), None)
         url = (data.get("url") or "").strip()
         if url:
             try:
-                with httpx.Client(timeout=15.0) as h:
-                    r = h.get(url)
-                    return (r.text[:15000] if r.text else str(r.status_code), None)
+                with httpx.Client(timeout=15.0, follow_redirects=True) as h:
+                    r = h.get(url, headers={"User-Agent": "Mozilla/5.0"})
+                    if r.status_code == 200:
+                        text = r.text
+                        text = re.sub(r'<script[^>]*>.*?</script>', '', text, flags=re.DOTALL)
+                        text = re.sub(r'<style[^>]*>.*?</style>', '', text, flags=re.DOTALL)
+                        text = re.sub(r'<[^>]+>', ' ', text)
+                        text = re.sub(r'\s+', ' ', text).strip()
+                        return (text[:15000] if text else "[Пустой документ]", None)
+                    else:
+                        return (f"[Ошибка HTTP {r.status_code}]", None)
             except Exception as e:
-                return (f"[Ошибка загрузки: {e}]", None)
-        return ("", None)
+                return (f"[Ошибка загрузки URL: {e}]", None)
+        search_query = data.get("label") or data.get("description") or "general knowledge"
+        try:
+            wiki_text = _fetch_wikipedia(search_query)
+            if wiki_text:
+                return (wiki_text[:15000], None)
+        except Exception:
+            pass
+        return ("[Нет данных для knowledge. Добавьте URL или текст документов.]", None)
+
     if ntype == "agent":
         provider = (data.get("provider") or "deepseek").strip() or "deepseek"
         base_url = (data.get("baseUrl") or data.get("base_url") or "").strip() or None
@@ -123,11 +154,7 @@ def _run_node(node: dict, current: str, steps_outputs: dict[str, str], edges: li
                 tools_config = []
         if not isinstance(tools_config, list):
             tools_config = []
-        context_parts = []
-        for sid, out in steps_outputs.items():
-            nd = nodes_by_id.get(sid)
-            if nd and nd.get("type") == "knowledge" and out:
-                context_parts.append(out[:8000])
+        context_parts = _get_connected_knowledge(nid, edges, nodes_by_id, steps_outputs)
         if context_parts:
             system = system + "\n\nКонтекст из базы знаний:\n" + "\n---\n".join(context_parts)
         if tools_config:
@@ -147,6 +174,7 @@ def _run_node(node: dict, current: str, steps_outputs: dict[str, str], edges: li
             max_tokens=1024,
         )
         return ((resp.choices[0].message.content or "").strip(), None)
+
     if ntype == "http":
         method = (data.get("method") or "GET").upper()
         url = (data.get("url") or "").strip()
@@ -165,11 +193,58 @@ def _run_node(node: dict, current: str, steps_outputs: dict[str, str], edges: li
             else:
                 r = h.request(method, url)
         return (r.text[:2000] if r.text else str(r.status_code), None)
+
     if ntype == "condition":
         cond = (data.get("condition") or "not_empty").strip()
         res = _eval_condition(cond, current)
         return ("true" if res else "false", res)
+
+    if ntype in ("action", "code"):
+        return (current, None)
+
     return (current, None)
+
+
+def _fetch_wikipedia(query: str) -> str | None:
+    """Загружает summary из Wikipedia по запросу (сначала ru, потом en)."""
+    try:
+        wiki_apis = [
+            "https://ru.wikipedia.org/w/api.php",
+            "https://en.wikipedia.org/w/api.php",
+        ]
+        params = {
+            "action": "query",
+            "list": "search",
+            "srsearch": query,
+            "format": "json",
+            "srlimit": 1,
+        }
+        with httpx.Client(timeout=10.0) as h:
+            for search_url in wiki_apis:
+                r = h.get(search_url, params=params)
+                data = r.json()
+                search_results = data.get("query", {}).get("search", [])
+                if not search_results:
+                    continue
+                title = search_results[0]["title"]
+                summary_params = {
+                    "action": "query",
+                    "prop": "extracts",
+                    "exintro": True,
+                    "explaintext": True,
+                    "titles": title,
+                    "format": "json",
+                }
+                r = h.get(search_url, params=summary_params)
+                data = r.json()
+                pages = data.get("query", {}).get("pages", {})
+                for page in pages.values():
+                    extract = page.get("extract", "")
+                    if extract:
+                        return f"Source: Wikipedia - {title}\n\n{extract}"
+        return None
+    except Exception:
+        return None
 
 
 def run_workflow(nodes: list[dict], edges: list[dict], user_input: str = "") -> dict:
@@ -183,12 +258,18 @@ def run_workflow(nodes: list[dict], edges: list[dict], user_input: str = "") -> 
         nid = node["id"]
         ntype = node.get("type", "action")
         try:
-            step_out, _ = _run_node(node, current, steps_outputs, edges, by_id)
+            result = _run_node(node, current, steps_outputs, edges, by_id)
+            if result is None:
+                raise RuntimeError(f"_run_node returned None for {ntype} node {nid}")
+            step_out, _ = result
         except Exception as e:
             steps.append({"nodeId": nid, "type": ntype, "error": str(e)})
             return {"output": "", "steps": steps, "error": str(e)}
         steps_outputs[nid] = step_out
-        current = step_out
+        # knowledge — контекст идёт в агент через system prompt (_get_connected_knowledge)
+        # condition — проверяет, не трансформирует данные
+        if ntype not in ("condition", "knowledge"):
+            current = step_out
         steps.append({"nodeId": nid, "type": ntype, "output": step_out[:500]})
 
     return {"output": current, "steps": steps}
@@ -213,21 +294,15 @@ def run_workflow_stream(nodes: list[dict], edges: list[dict], user_input: str = 
             steps_outputs[nid] = current
             continue
         if ntype == "knowledge":
-            docs = data.get("documents")
-            if isinstance(docs, list):
-                current = "\n\n".join(str(d) for d in docs)
-            else:
-                url = (data.get("url") or "").strip()
-                if url:
-                    try:
-                        with httpx.Client(timeout=15.0) as h:
-                            r = h.get(url)
-                            current = r.text[:15000] if r.text else str(r.status_code)
-                    except Exception as e:
-                        current = f"[Ошибка загрузки: {e}]"
-                else:
-                    current = ""
-            steps_outputs[nid] = current
+            try:
+                result = _run_node(node, "", steps_outputs, edges, by_id)
+                if result is None:
+                    raise RuntimeError(f"_run_node returned None for knowledge node {nid}")
+                knowledge_out, _ = result
+                steps_outputs[nid] = knowledge_out
+            except Exception as e:
+                yield json_mod.dumps({"error": str(e)})
+                return
             continue
         if ntype == "http":
             try:
@@ -239,11 +314,14 @@ def run_workflow_stream(nodes: list[dict], edges: list[dict], user_input: str = 
             continue
         if ntype == "condition":
             try:
-                current, _ = _run_node(node, current, steps_outputs, edges, by_id)
+                result = _run_node(node, current, steps_outputs, edges, by_id)
+                if result is None:
+                    raise RuntimeError(f"_run_node returned None for condition node {nid}")
+                cond_result, _ = result
+                steps_outputs[nid] = cond_result
             except Exception as e:
                 yield json_mod.dumps({"error": str(e)})
                 return
-            steps_outputs[nid] = current
             continue
         if ntype == "agent":
             provider = (data.get("provider") or "deepseek").strip() or "deepseek"
@@ -252,12 +330,20 @@ def run_workflow_stream(nodes: list[dict], edges: list[dict], user_input: str = 
             model = (data.get("model") or DEFAULT_MODEL).strip() or DEFAULT_MODEL
             system = (data.get("systemPrompt") or "Ты полезный ассистент.").strip()
             tools_config = data.get("tools") or []
-            context_parts = [steps_outputs[sid] for sid in steps_outputs if by_id.get(sid, {}).get("type") == "knowledge" and steps_outputs[sid]]
+            if isinstance(tools_config, str):
+                try:
+                    tools_config = json.loads(tools_config)
+                except (json.JSONDecodeError, TypeError):
+                    tools_config = []
+            if not isinstance(tools_config, list):
+                tools_config = []
+            context_parts = _get_connected_knowledge(nid, edges, by_id, steps_outputs)
             if context_parts:
                 system = system + "\n\nКонтекст из базы знаний:\n" + "\n---\n".join(c[:8000] for c in context_parts)
             if tools_config:
                 tools_desc = [f"- {t.get('name') or t.get('url') or 'tool'}: {t.get('description') or t.get('url') or ''}" for t in tools_config]
                 system = system + "\n\nДоступные инструменты:\n" + "\n".join(tools_desc)
+
             try:
                 client = _get_client(provider, base_url, api_key)
                 stream = client.chat.completions.create(

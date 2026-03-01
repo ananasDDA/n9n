@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useRef, useState, useEffect } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { TypewriterText } from './TypewriterText'
 import { TypewriterMarkdown } from './TypewriterMarkdown'
@@ -9,6 +9,11 @@ export interface ChatMessage {
   role: 'user' | 'assistant'
   content: string
   done?: boolean
+}
+
+interface WorkflowData {
+  nodes: unknown[]
+  edges: unknown[]
 }
 
 interface ChatProps {
@@ -23,6 +28,12 @@ interface ChatProps {
   /** Если передано — id сообщений, для которых печать уже завершена (не перепечатывать при смене вкладки) */
   completedTypewriterIds?: Set<string>
   onTypewriterComplete?: (messageId: string) => void
+  /** Режим: landing (первый экран) или workspace (редактор) */
+  mode?: 'landing' | 'workspace'
+  /** Получить текущий workflow (только для workspace) */
+  getCurrentWorkflow?: () => WorkflowData | null
+  /** Callback при обновлении workflow (только для workspace) */
+  onWorkflowUpdate?: (workflow: WorkflowData) => void
 }
 
 const API_BASE = (import.meta as { env?: { VITE_API_BASE?: string } }).env?.VITE_API_BASE ?? 'http://localhost:8000'
@@ -39,6 +50,9 @@ export function Chat({
   compact = false,
   completedTypewriterIds: completedTypewriterIdsProp,
   onTypewriterComplete,
+  mode = 'landing',
+  getCurrentWorkflow,
+  onWorkflowUpdate,
 }: ChatProps) {
   const [internalMessages, setInternalMessages] = useState<ChatMessage[]>([])
   const messages = messagesProp ?? internalMessages
@@ -52,9 +66,24 @@ export function Chat({
   const typewriterDoneIds = completedTypewriterIdsProp ?? internalDoneIds
   const setTypewriterDone = onTypewriterComplete ?? ((id: string) => setInternalDoneIds((prev) => new Set(prev).add(id)))
 
-  const scrollToBottom = useCallback(() => {
-    listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: 'smooth' })
+  const scrollToBottom = useCallback((behavior: ScrollBehavior = 'smooth') => {
+    listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior })
   }, [])
+  
+  // Auto-scroll during typewriter effect
+  const [isTypewriterActive, setIsTypewriterActive] = useState(false)
+  
+  useEffect(() => {
+    if (isTypewriterActive && listRef.current) {
+      const interval = setInterval(() => {
+        listRef.current?.scrollTo({ 
+          top: listRef.current.scrollHeight, 
+          behavior: 'auto' 
+        })
+      }, 100)
+      return () => clearInterval(interval)
+    }
+  }, [isTypewriterActive])
 
   const stopGeneration = useCallback(() => {
     if (abortRef.current) abortRef.current.abort()
@@ -67,10 +96,75 @@ export function Chat({
     const userMsg: ChatMessage = { id: `u-${Date.now()}`, role: 'user', content: text, done: true }
     setMessagesState((m) => [...m, userMsg])
     setLoading(true)
-    scrollToBottom()
+    scrollToBottom('auto')
 
     abortRef.current = new AbortController()
     try {
+      // В режиме workspace можем редактировать workflow
+      if (mode === 'workspace' && getCurrentWorkflow) {
+        const currentWorkflow = getCurrentWorkflow()
+        if (currentWorkflow) {
+          // Проверяем, запрашивает ли пользователь изменения workflow
+          const editKeywords = /добавь|удали|измени|переделай|обнови|редактируй|поменяй|вставь|убери|настрой|измени промпт|добавь ноду|удали ноду/i
+          const questionKeywords = /что у меня|какие ноды|что делает|как работает|объясни|покажи|сколько|какой|какая/i
+          
+          if (editKeywords.test(text) || questionKeywords.test(text)) {
+            // Очищаем ноды от метаданных React Flow (measured, selected, dragging)
+            // чтобы LLM видела чистый JSON и не тратила токены на мусор
+            const cleanNodes = (currentWorkflow.nodes as Record<string, unknown>[]).map((n) => ({
+              id: n.id,
+              type: n.type,
+              position: {
+                x: Math.round(((n.position as Record<string, number>)?.x) ?? 0),
+                y: Math.round(((n.position as Record<string, number>)?.y) ?? 0),
+              },
+              data: n.data,
+            }))
+            const cleanEdges = (currentWorkflow.edges as Record<string, unknown>[]).map((e) => ({
+              id: e.id,
+              source: e.source,
+              target: e.target,
+              sourceHandle: e.sourceHandle,
+              targetHandle: e.targetHandle,
+            }))
+
+            const res = await fetch(`${API_BASE}/api/edit-workflow`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                current_nodes: cleanNodes,
+                current_edges: cleanEdges,
+                user_request: text,
+                chat_history: [...messages, userMsg].map(({ role, content }) => ({ role, content })),
+              }),
+              signal: abortRef.current.signal,
+            })
+            
+            if (res.ok) {
+              const data = await res.json()
+              const reply = data.explanation || 'Workflow обновлён.'
+
+              if (data.changed !== false && data.nodes && data.edges && onWorkflowUpdate) {
+                onWorkflowUpdate({ nodes: data.nodes, edges: data.edges })
+              }
+              
+              const assistantMsg: ChatMessage = { 
+                id: `a-${Date.now()}`, 
+                role: 'assistant', 
+                content: reply, 
+                done: true 
+              }
+              setMessagesState((m) => [...m, assistantMsg])
+              setLoading(false)
+              abortRef.current = null
+              scrollToBottom()
+              return
+            }
+          }
+        }
+      }
+      
+      // Обычный чат
       const res = await fetch(`${API_BASE}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -97,7 +191,7 @@ export function Chat({
       abortRef.current = null
       scrollToBottom()
     }
-  }, [input, loading, messages, welcomeMessage, onReadyToCreate, scrollToBottom, setMessagesState])
+  }, [input, loading, messages, welcomeMessage, onReadyToCreate, scrollToBottom, setMessagesState, mode, getCurrentWorkflow, onWorkflowUpdate])
 
   const showWelcome = messages.length === 0
 
@@ -130,8 +224,10 @@ export function Chat({
                     key={msg.id}
                     text={msg.content}
                     speed={typewriterSpeed}
+                    onStart={() => setIsTypewriterActive(true)}
                     onComplete={() => {
                     setTypewriterDone(msg.id)
+                    setIsTypewriterActive(false)
                     if (messages[messages.length - 1]?.id === msg.id && SUGGEST_BUILD.test(msg.content) && onReadyToCreate) onReadyToCreate()
                   }}
                   />
@@ -154,14 +250,19 @@ export function Chat({
       </div>
       <div className="chat__footer">
         <div className="chat__input-wrap">
-          <input
-            type="text"
-            className="chat__input"
-            placeholder="Напишите сообщение..."
+          <textarea
+            className="chat__textarea"
+            placeholder={mode === 'workspace' ? "Напиши изменения или вопросы о workflow..." : "Напишите сообщение..."}
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage()}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault()
+                sendMessage()
+              }
+            }}
             disabled={loading}
+            rows={1}
           />
           {loading ? (
             <button type="button" className="chat__send chat__send--stop" onClick={stopGeneration} title="Остановить">

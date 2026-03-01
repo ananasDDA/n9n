@@ -190,6 +190,7 @@
 .chat__input-wrap {
   display: flex;
   gap: 8px;
+  align-items: flex-end;
 }
 
 .chat__input {
@@ -205,6 +206,33 @@
 .chat__input:focus {
   outline: none;
   border-color: #a78bfa;
+}
+
+.chat__textarea {
+  flex: 1;
+  padding: 10px 14px;
+  background: #27272a;
+  border: 1px solid #3f3f46;
+  border-radius: 8px;
+  color: #e4e4e7;
+  font-size: 14px;
+  font-family: inherit;
+  resize: none;
+  min-height: 44px;
+  max-height: 120px;
+  line-height: 1.5;
+  overflow-y: auto;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+}
+
+.chat__textarea:focus {
+  outline: none;
+  border-color: #a78bfa;
+}
+
+.chat__textarea::placeholder {
+  color: #71717a;
 }
 
 .chat__send {

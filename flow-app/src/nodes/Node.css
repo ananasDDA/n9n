@@ -1,97 +1,262 @@
+/* ===== BASE NODE STYLES ===== */
 .workflow-node {
-  min-width: 140px;
-  padding: 10px 14px;
-  border-radius: 8px;
-  border: 1px solid #3f3f46;
-  background: #27272a;
+  min-width: 160px;
+  max-width: 220px;
+  padding: 0;
+  border-radius: 6px;
+  border: 2px solid;
+  background: #1a1a1e;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: all 0.2s ease;
+  cursor: grab;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.workflow-node:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+
+.workflow-node:active {
+  cursor: grabbing;
+}
+
+/* Selected state */
+.workflow-node.selected {
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.3);
+}
+
+/* Node Header with Icon */
+.workflow-node__header {
   display: flex;
   align-items: center;
   gap: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  padding: 10px 12px;
+  border-bottom: 1px solid;
+  border-radius: 4px 4px 0 0;
 }
 
 .workflow-node__icon {
-  font-size: 14px;
-  opacity: 0.9;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
-.workflow-node__body {
-  flex: 1;
-  min-width: 0;
+.workflow-node__icon svg {
+  width: 16px;
+  height: 16px;
 }
 
 .workflow-node__label {
   font-size: 13px;
-  font-weight: 500;
-  color: #e4e4e7;
-}
-
-.workflow-node__sub {
-  font-size: 11px;
-  color: #a1a1aa;
-  margin-top: 2px;
+  font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.workflow-node__handle {
-  width: 10px;
-  height: 10px;
-  background: #52525b;
-  border: 2px solid #18181b;
+/* Node Body */
+.workflow-node__body {
+  padding: 8px 12px;
+  font-size: 11px;
+  color: #71717a;
 }
 
+.workflow-node__sub {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 4px;
+}
+
+/* ===== HANDLE STYLES ===== */
+.workflow-node__handle {
+  width: 18px;
+  height: 18px;
+  background: #3f3f46;
+  border: 3px solid #18181b;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.workflow-node__handle:hover {
+  background: #a78bfa;
+  transform: scale(1.4);
+}
+
+/* Context handle (top) for knowledge input */
+.workflow-node__handle--context {
+  background: #8b5cf6;
+  top: -6px;
+}
+
+/* Knowledge source handle */
+.workflow-node__handle--knowledge {
+  background: #10b981;
+}
+
+/* ===== TRIGGER NODE (Green, rounded only on right side) ===== */
 .workflow-node--trigger {
   border-color: #22c55e;
-  background: linear-gradient(135deg, #27272a 0%, #1a2e1f 100%);
+  border-radius: 4px 20px 20px 4px;
+}
+
+.workflow-node--trigger .workflow-node__header {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: rgba(34, 197, 94, 0.2);
+  border-radius: 2px 18px 0 0;
 }
 
 .workflow-node--trigger .workflow-node__icon {
   color: #22c55e;
 }
 
-.workflow-node--action {
-  border-color: #3b82f6;
-  background: linear-gradient(135deg, #27272a 0%, #1e2a3e 100%);
+.workflow-node--trigger .workflow-node__label {
+  color: #4ade80;
 }
 
-.workflow-node--action .workflow-node__icon {
-  color: #3b82f6;
-}
+/* Trigger has no left handle - it's the start */
 
-.workflow-node--code {
-  border-color: #a78bfa;
-  background: linear-gradient(135deg, #27272a 0%, #2a2340 100%);
-}
-
-.workflow-node--code .workflow-node__icon {
-  color: #a78bfa;
-}
-
+/* ===== AGENT NODE (Purple, rounded both sides - 16px) ===== */
 .workflow-node--agent {
   border-color: #8b5cf6;
-  background: linear-gradient(135deg, #27272a 0%, #2e1f4e 100%);
+  border-radius: 16px;
+}
+
+.workflow-node--agent .workflow-node__header {
+  background: rgba(139, 92, 246, 0.1);
+  border-color: rgba(139, 92, 246, 0.2);
+  border-radius: 14px 14px 0 0;
 }
 
 .workflow-node--agent .workflow-node__icon {
   color: #a78bfa;
 }
 
+.workflow-node--agent .workflow-node__label {
+  color: #c4b5fd;
+}
+
+.workflow-node__sub--knowledge {
+  color: #a78bfa;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ===== HTTP NODE (Blue, angular) ===== */
 .workflow-node--http {
-  border-color: #0ea5e9;
-  background: linear-gradient(135deg, #27272a 0%, #0c2d3e 100%);
+  border-color: #3b82f6;
+  border-radius: 2px;
+}
+
+.workflow-node--http .workflow-node__header {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.2);
 }
 
 .workflow-node--http .workflow-node__icon {
-  color: #38bdf8;
+  color: #60a5fa;
 }
 
+.workflow-node--http .workflow-node__label {
+  color: #93c5fd;
+}
+
+/* ===== KNOWLEDGE NODE (Teal, no border-radius - sharp corners) ===== */
+.workflow-node--knowledge {
+  border-color: #14b8a6;
+  border-radius: 0;
+}
+
+.workflow-node--knowledge .workflow-node__header {
+  background: rgba(20, 184, 166, 0.1);
+  border-color: rgba(20, 184, 166, 0.2);
+  border-radius: 0;
+}
+
+.workflow-node--knowledge .workflow-node__icon {
+  color: #2dd4bf;
+}
+
+.workflow-node--knowledge .workflow-node__label {
+  color: #5eead4;
+}
+
+.workflow-node__sub--url {
+  color: #2dd4bf;
+}
+
+.workflow-node__sub--docs {
+  color: #5eead4;
+  font-style: italic;
+}
+
+.workflow-node__sub--empty {
+  color: #6b7280;
+  font-style: italic;
+}
+
+/* ===== CONDITION NODE (Amber, diamond-like) ===== */
 .workflow-node--condition {
   border-color: #f59e0b;
-  background: linear-gradient(135deg, #27272a 0%, #3e2e1a 100%);
+  border-radius: 10px;
+  transform: rotate(0deg);
+}
+
+.workflow-node--condition .workflow-node__header {
+  background: rgba(245, 158, 11, 0.1);
+  border-color: rgba(245, 158, 11, 0.2);
 }
 
 .workflow-node--condition .workflow-node__icon {
   color: #fbbf24;
+}
+
+.workflow-node--condition .workflow-node__label {
+  color: #fcd34d;
+}
+
+/* ===== CODE NODE (Gray, monospace feel) ===== */
+.workflow-node--code {
+  border-color: #6b7280;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+.workflow-node--code .workflow-node__header {
+  background: rgba(107, 114, 128, 0.1);
+  border-color: rgba(107, 114, 128, 0.2);
+}
+
+.workflow-node--code .workflow-node__icon {
+  color: #9ca3af;
+}
+
+.workflow-node--code .workflow-node__label {
+  color: #d1d5db;
+}
+
+/* ===== ACTION NODE (Indigo) ===== */
+.workflow-node--action {
+  border-color: #6366f1;
+}
+
+.workflow-node--action .workflow-node__header {
+  background: rgba(99, 102, 241, 0.1);
+  border-color: rgba(99, 102, 241, 0.2);
+}
+
+.workflow-node--action .workflow-node__icon {
+  color: #818cf8;
+}
+
+.workflow-node--action .workflow-node__label {
+  color: #a5b4fc;
 }

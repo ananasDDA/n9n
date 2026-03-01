@@ -145,6 +145,46 @@ export function NodeConfigPanel({ node, onUpdate }: NodeConfigPanelProps) {
       {(type as NodeType) === 'knowledge' && (
         <>
           <label className="config-panel__label">
+            Описание
+            <input
+              type="text"
+              className="config-panel__input"
+              placeholder="Краткое описание содержимого"
+              value={(data.description as string) ?? ''}
+              onChange={(e) => patch('description', e.target.value)}
+            />
+          </label>
+          <label className="config-panel__label">
+            Теги (через запятую)
+            <input
+              type="text"
+              className="config-panel__input"
+              placeholder="grammar, verbs, beginner"
+              value={Array.isArray(data.tags) ? (data.tags as string[]).join(', ') : ''}
+              onChange={(e) => patch('tags', e.target.value.split(',').map(t => t.trim()).filter(Boolean))}
+            />
+          </label>
+          <label className="config-panel__label">
+            Категория
+            <input
+              type="text"
+              className="config-panel__input"
+              placeholder="language_learning"
+              value={(data.category as string) ?? ''}
+              onChange={(e) => patch('category', e.target.value)}
+            />
+          </label>
+          <label className="config-panel__label">
+            Источник
+            <input
+              type="text"
+              className="config-panel__input"
+              placeholder="textbook.pdf"
+              value={(data.source as string) ?? ''}
+              onChange={(e) => patch('source', e.target.value)}
+            />
+          </label>
+          <label className="config-panel__label">
             URL документа (опционально)
             <input
               type="text"
@@ -153,6 +193,7 @@ export function NodeConfigPanel({ node, onUpdate }: NodeConfigPanelProps) {
               value={(data.url as string) ?? ''}
               onChange={(e) => patch('url', e.target.value)}
             />
+            <p className="config-panel__hint">Если URL задан — документ загрузится автоматически. Если нет URL и нет текста — будет использован Wikipedia API.</p>
           </label>
           <label className="config-panel__label">
             Тексты документов (по одному на строку, если нет URL)
@@ -171,18 +212,20 @@ export function NodeConfigPanel({ node, onUpdate }: NodeConfigPanelProps) {
         <>
           <label className="config-panel__label">
             Условие
-            <select
+            <input
+              type="text"
               className="config-panel__input"
               value={(data.condition as string) ?? 'not_empty'}
               onChange={(e) => patch('condition', e.target.value)}
-            >
-              <option value="not_empty">Вход не пустой</option>
-              <option value="empty">Вход пустой</option>
-              <option value="contains(error)">Содержит &quot;error&quot;</option>
-              <option value="contains(успех)">Содержит &quot;успех&quot;</option>
-            </select>
+              placeholder="contains(слово) или not_empty"
+            />
           </label>
-          <p className="config-panel__hint">Выход «истина» — правое ребро, «ложь» — нижнее.</p>
+          <p className="config-panel__hint">
+            Формат: <code>contains(слово)</code> — проверяет наличие слова во входе. 
+            <br/>Примеры: <code>contains(сложн)</code>, <code>contains(ошибка)</code>, <code>not_empty</code>
+            <br/>Выход «истина» — правое ребро (true), «ложь» — нижнее (false).
+            <br/><strong>Важно:</strong> Condition должен быть ДО агента, чтобы влиять на его работу.
+          </p>
         </>
       )}
 

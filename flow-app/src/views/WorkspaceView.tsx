@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import FaultyTerminal from '../backgrounds/FaultyTerminal'
 import { Chat } from '../components/Chat'
 import type { ChatMessage } from '../components/Chat'
@@ -8,6 +8,13 @@ import './WorkspaceView.css'
 const WELCOME = `Привет. Я помогу спроектировать агента или workflow.
 
 Кратко опиши задачу — при необходимости задам уточняющие вопросы. Когда всё будет ясно, подскажу нажать **Build** и откроется редактор.`
+
+const WORKSPACE_WELCOME = `Редактор открыт. Я вижу твой workflow и могу:
+• Отвечать на вопросы о структуре бота
+• Вносить изменения (добавить/удалить ноды, изменить промпты)
+• Объяснять, как работает твой workflow
+
+Просто напиши, что хочешь изменить или спроси!`
 
 interface WorkspaceViewProps {
   messages: ChatMessage[]
@@ -29,6 +36,22 @@ export function WorkspaceView({
   onTypewriterComplete,
 }: WorkspaceViewProps) {
   const [flowFullscreen, setFlowFullscreen] = useState(false)
+  const [workflowUpdate, setWorkflowUpdate] = useState<{ nodes: unknown[]; edges: unknown[] } | null>(null)
+  const flowEditorRef = useRef<{ getWorkflow: () => { nodes: unknown[]; edges: unknown[] }; setWorkflow: (w: { nodes: unknown[]; edges: unknown[] }) => void } | null>(null)
+
+  // Callback для получения текущего workflow из FlowEditor
+  const registerFlowEditor = useCallback((api: { getWorkflow: () => { nodes: unknown[]; edges: unknown[] }; setWorkflow: (w: { nodes: unknown[]; edges: unknown[] }) => void }) => {
+    flowEditorRef.current = api
+  }, [])
+
+  // Callback для обновления workflow из чата
+  const handleWorkflowUpdate = useCallback((newWorkflow: { nodes: unknown[]; edges: unknown[] }) => {
+    setWorkflowUpdate(newWorkflow)
+    // Применяем изменения к FlowEditor
+    if (flowEditorRef.current) {
+      flowEditorRef.current.setWorkflow(newWorkflow)
+    }
+  }, [])
 
   return (
     <div className="workspace workspace--enter">
@@ -56,13 +79,16 @@ export function WorkspaceView({
       <div className="workspace__content">
         <div className="workspace__chat-widget">
           <Chat
-            welcomeMessage={WELCOME}
+            welcomeMessage={WORKSPACE_WELCOME}
             messages={messages}
             setMessages={setMessages}
             typewriterSpeed={25}
             compact
             completedTypewriterIds={completedTypewriterIds}
             onTypewriterComplete={onTypewriterComplete}
+            mode="workspace"
+            getCurrentWorkflow={() => flowEditorRef.current?.getWorkflow() || null}
+            onWorkflowUpdate={handleWorkflowUpdate}
           />
         </div>
         <div
@@ -77,7 +103,15 @@ export function WorkspaceView({
               onClick={() => setFlowFullscreen((v) => !v)}
               title={flowFullscreen ? 'Выйти из полноэкранного режима' : 'Открыть на полный экран'}
             >
-              {flowFullscreen ? '✕ Закрыть' : '⛶ На полный экран'}
+              {flowFullscreen ? (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/>
+                </svg>
+              ) : (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                </svg>
+              )}
             </button>
           </div>
           <div className="workspace__flow-editor-wrap">
@@ -85,6 +119,8 @@ export function WorkspaceView({
               initialPrompt={buildPrompt ?? undefined}
               initialPromptRef={buildPromptRef}
               onFlowGenerated={onFlowGenerated}
+              workflowUpdate={workflowUpdate}
+              onRegisterApi={registerFlowEditor}
             />
           </div>
         </div>

@@ -49,6 +49,10 @@ export interface KnowledgeNodeData extends Record<string, unknown> {
   label: string
   url?: string
   documents?: string[]
+  description?: string
+  tags?: string[]
+  category?: string
+  source?: string
 }
 
 export type TriggerNode = Node<TriggerNodeData, 'trigger'>

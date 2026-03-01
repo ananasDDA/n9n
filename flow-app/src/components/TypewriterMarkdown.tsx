@@ -5,6 +5,7 @@ interface TypewriterMarkdownProps {
   text: string
   speed?: number
   onComplete?: () => void
+  onStart?: () => void
   className?: string
 }
 
@@ -13,10 +14,13 @@ interface TypewriterMarkdownProps {
  * Используется для красивого появления ответов ассистента в чате.
  * onComplete в ref, чтобы ввод в чат (ре-рендер) не перезапускал печать.
  */
-export function TypewriterMarkdown({ text, speed = 20, onComplete, className = '' }: TypewriterMarkdownProps) {
+export function TypewriterMarkdown({ text, speed = 20, onComplete, onStart, className = '' }: TypewriterMarkdownProps) {
   const [displayed, setDisplayed] = useState('')
   const onCompleteRef = useRef(onComplete)
+  const onStartRef = useRef(onStart)
+  const hasStartedRef = useRef(false)
   onCompleteRef.current = onComplete
+  onStartRef.current = onStart
 
   useEffect(() => {
     if (!text) {
@@ -24,6 +28,11 @@ export function TypewriterMarkdown({ text, speed = 20, onComplete, className = '
       return
     }
     setDisplayed('')
+    // Notify start on first render
+    if (!hasStartedRef.current) {
+      hasStartedRef.current = true
+      onStartRef.current?.()
+    }
     let i = 0
     const id = setInterval(() => {
       i += 1

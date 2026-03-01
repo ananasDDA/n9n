@@ -11,8 +11,10 @@ function App() {
   const [buildPrompt, setBuildPrompt] = useState<string | null>(null)
   const buildPromptRef = useRef<string | null>(null)
   const [completedTypewriterIds, setCompletedTypewriterIds] = useState<Set<string>>(() => new Set())
+  const [isBuilding, setIsBuilding] = useState(false)
 
   const openProject = useCallback(() => {
+    setIsBuilding(true)
     const rev = [...messages].reverse()
     const lastUser = rev.find((m) => m.role === 'user')
     const lastAssistant = rev.find((m) => m.role === 'assistant')
@@ -25,9 +27,11 @@ function App() {
     buildPromptRef.current = promptToUse
     setBuildPrompt(promptToUse)
     setView('workspace')
+    // isBuilding остаётся true, сбросится когда workflow сгенерируется
   }, [messages])
 
   const onFlowGenerated = useCallback(() => {
+    setIsBuilding(false)
     setTimeout(() => {
       buildPromptRef.current = null
       setBuildPrompt(null)
@@ -42,6 +46,7 @@ function App() {
         showBuildButton={showBuildButton}
         setShowBuildButton={setShowBuildButton}
         onBuild={openProject}
+        isBuilding={isBuilding}
         completedTypewriterIds={completedTypewriterIds}
         onTypewriterComplete={(id) => setCompletedTypewriterIds((s) => new Set(s).add(id))}
       />

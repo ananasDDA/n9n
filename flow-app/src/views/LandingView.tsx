@@ -13,6 +13,7 @@ interface LandingViewProps {
   showBuildButton: boolean
   setShowBuildButton: (v: boolean) => void
   onBuild: () => void
+  isBuilding?: boolean
   completedTypewriterIds?: Set<string>
   onTypewriterComplete?: (messageId: string) => void
 }
@@ -23,6 +24,7 @@ export function LandingView({
   showBuildButton,
   setShowBuildButton,
   onBuild,
+  isBuilding = false,
   completedTypewriterIds,
   onTypewriterComplete,
 }: LandingViewProps) {
@@ -66,11 +68,19 @@ export function LandingView({
           <div className="landing__build-wrap">
             <button
               type="button"
-              className="landing__build-btn"
+              className={`landing__build-btn ${isBuilding ? 'landing__build-btn--loading' : ''}`}
               onClick={onBuild}
-              title="Открыть редактор графа: ваш запрос и ответ копайлота отправятся на сервер, по ним соберётся workflow (ноды и связи) и отобразится на канвасе справа"
+              disabled={isBuilding}
+              title={isBuilding ? 'Генерация workflow...' : 'Открыть редактор графа: ваш запрос и ответ копайлота отправятся на сервер, по ним соберётся workflow (ноды и связи) и отобразится на канвасе справа'}
             >
-              Build
+              {isBuilding ? (
+                <>
+                  <span className="landing__build-spinner" />
+                  Генерация...
+                </>
+              ) : (
+                'Build'
+              )}
             </button>
           </div>
         )}

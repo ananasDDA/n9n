@@ -12,10 +12,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
-from generate_workflow import generate_workflow_from_prompt
-from prompts import COPILOT_SYSTEM
+from generate_workflow import generate_workflow_from_prompt, normalize_workflow
+from prompts import COPILOT_SYSTEM, EDIT_WORKFLOW_CONTEXT
 from executor import run_workflow, run_workflow_stream
 from workflows_store import create as wf_create, list_workflows as wf_list, get as wf_get, update as wf_update, delete as wf_delete
+import json
+import os
+from openai import OpenAI
 
 app = FastAPI(title="Workflow API", version="0.3.0")
 
@@ -207,3 +210,107 @@ async def webhook_trigger_api(wf_id: str, body: WebhookBody = Body(default=Webho
 async def export_python(body: ExportPythonRequest):
     """По графу сгенерировать Python-проект + Dockerfile. Позже."""
     raise HTTPException(status_code=501, detail="Export to Python will be implemented in Phase 3")
+
+
+class EditWorkflowRequest(BaseModel):
+    current_nodes: list[dict]
+    current_edges: list[dict]
+    user_request: str
+    chat_history: list[ChatMessage] = []
+
+
+class EditWorkflowResponse(BaseModel):
+    nodes: list[dict]
+    edges: list[dict]
+    explanation: str
+    changed: bool = True
+
+
+@app.post("/api/edit-workflow", response_model=EditWorkflowResponse)
+async def edit_workflow_api(body: EditWorkflowRequest):
+    """Редактирование workflow через чат: AI видит текущий граф и вносит изменения по запросу."""
+    api_key = os.environ.get("DEEPSEEK_API_KEY")
+    if not api_key or not api_key.strip():
+        return EditWorkflowResponse(
+            nodes=body.current_nodes,
+            edges=body.current_edges,
+            explanation="DEEPSEEK_API_KEY не настроен. Изменения не внесены."
+        )
+
+    client = OpenAI(api_key=api_key, base_url="https://api.deepseek.com")
+
+    workflow_json = json.dumps({
+        "nodes": body.current_nodes,
+        "edges": body.current_edges
+    }, ensure_ascii=False, indent=2)
+
+    messages = [
+        {"role": "system", "content": EDIT_WORKFLOW_CONTEXT},
+        {"role": "user", "content": f"Текущий workflow:\n```json\n{workflow_json}\n```\n\nЗапрос пользователя: {body.user_request}\n\nВерни ПОЛНЫЙ обновлённый workflow (ВСЕ ноды, включая существующие и новые) в JSON."}
+    ]
+
+    try:
+        resp = client.chat.completions.create(
+            model="deepseek-chat",
+            messages=messages,
+            max_tokens=4000,
+        )
+        text = (resp.choices[0].message.content or "").strip()
+
+        if "```" in text:
+            import re
+            match = re.search(r"```(?:json)?\s*([\s\S]*?)```", text)
+            if match:
+                text = match.group(1).strip()
+
+        start = text.find("{")
+        if start != -1:
+            depth = 0
+            for i in range(start, len(text)):
+                if text[i] == "{":
+                    depth += 1
+                elif text[i] == "}":
+                    depth -= 1
+                    if depth == 0:
+                        text = text[start:i + 1]
+                        break
+
+        result = json.loads(text)
+
+        raw_nodes = result.get("nodes")
+        raw_edges = result.get("edges")
+        explanation = result.get("explanation", "Workflow обновлён.")
+
+        if not raw_nodes or not isinstance(raw_nodes, list):
+            return EditWorkflowResponse(
+                nodes=body.current_nodes,
+                edges=body.current_edges,
+                explanation=explanation if explanation else "Workflow не изменён.",
+                changed=False,
+            )
+
+        normalized = normalize_workflow(raw_nodes, raw_edges or [], relayout=False)
+        out_nodes = normalized["nodes"]
+        out_edges = normalized["edges"]
+
+        if not out_nodes:
+            return EditWorkflowResponse(
+                nodes=body.current_nodes,
+                edges=body.current_edges,
+                explanation="Не удалось нормализовать workflow. Текущий сохранён.",
+                changed=False,
+            )
+
+        return EditWorkflowResponse(
+            nodes=out_nodes,
+            edges=out_edges,
+            explanation=explanation,
+            changed=True,
+        )
+    except Exception as e:
+        return EditWorkflowResponse(
+            nodes=body.current_nodes,
+            edges=body.current_edges,
+            explanation=f"Ошибка при редактировании: {str(e)}. Текущий workflow сохранён.",
+            changed=False,
+        )

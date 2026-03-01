@@ -62,3 +62,26 @@
   transform: translateY(-2px);
   box-shadow: 0 6px 24px rgba(148, 33, 146, 0.5);
 }
+
+.landing__build-btn--loading {
+  opacity: 0.8;
+  cursor: not-allowed;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.landing__build-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: build-spinner 0.8s linear infinite;
+}
+
+@keyframes build-spinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
