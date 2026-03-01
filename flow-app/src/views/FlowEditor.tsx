@@ -94,7 +94,6 @@ interface FlowEditorProps {
 export function FlowEditor({ initialPrompt, initialPromptRef, onFlowGenerated, workflowUpdate, onRegisterApi }: FlowEditorProps = {}) {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes)
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges)
-  const [exportStatus, setExportStatus] = useState<'idle' | 'loading' | 'error'>('idle')
   const [generateError, setGenerateError] = useState<string | null>(null)
   const [generatingWorkflow, setGeneratingWorkflow] = useState(false)
   const [testInput, setTestInput] = useState('')
@@ -249,27 +248,6 @@ export function FlowEditor({ initialPrompt, initialPromptRef, onFlowGenerated, w
     return () => { cancelled = true }
   }, [initialPrompt, initialPromptRef, onFlowGenerated, setNodes, setEdges, fitView])
 
-  const onExportPython = useCallback(async () => {
-    setExportStatus('loading')
-    try {
-      const res = await fetch(`${API_BASE}/api/export-python`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nodes, edges }),
-      })
-      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).detail || res.statusText)
-      const blob = await res.blob()
-      const a = document.createElement('a')
-      a.href = URL.createObjectURL(blob)
-      a.download = 'workflow-project.zip'
-      a.click()
-      URL.revokeObjectURL(a.href)
-      setExportStatus('idle')
-    } catch {
-      setExportStatus('error')
-      setTimeout(() => setExportStatus('idle'), 3000)
-    }
-  }, [nodes, edges])
 
   const onRunTest = useCallback(async () => {
     setTestStatus('loading')
@@ -446,23 +424,6 @@ export function FlowEditor({ initialPrompt, initialPromptRef, onFlowGenerated, w
               </div>
             )}
           </div>
-        </div>
-        <div className="sidebar__section">
-          <div className="sidebar__section-header">
-            <svg className="sidebar__section-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-            </svg>
-            <h3 className="sidebar__subtitle">Export</h3>
-          </div>
-          <button type="button" className="btn btn--export" onClick={onExportPython} disabled={exportStatus === 'loading'}>
-            {exportStatus === 'loading' ? (
-              <><span className="btn__spinner" /> Exporting...</>
-            ) : exportStatus === 'error' ? (
-              'Not Available'
-            ) : (
-              'Export to Python'
-            )}
-          </button>
         </div>
         
         <div className="sidebar__section">

@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@types/react-syntax-highlighter": "^15.5.13",
     "@xyflow/react": "^12.3.6",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -19,6 +20,7 @@
     "react-dom": "^18.3.1",
     "react-markdown": "^10.1.0",
     "react-resizable-panels": "^4.6.5",
+    "react-syntax-highlighter": "^16.1.1",
     "tailwind-merge": "^3.5.0"
   },
   "devDependencies": {
