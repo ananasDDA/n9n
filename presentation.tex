@@ -1,0 +1,412 @@
+\documentclass[aspectratio=169, 12pt]{beamer}
+
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[russian]{babel}
+\usepackage{tikz}
+\usetikzlibrary{positioning, arrows.meta, shapes.geometric, shapes.multipart, shapes.symbols, fit, calc}
+\usepackage{booktabs}
+\usepackage{array}
+
+% --- Тема и цвета ---
+\usetheme{Madrid}
+\usecolortheme{whale}
+
+\definecolor{accent}{HTML}{4A9EFF}
+\definecolor{danger}{HTML}{FF6B6B}
+\definecolor{warn}{HTML}{FFA94D}
+\definecolor{ok}{HTML}{51CF66}
+\definecolor{purple}{HTML}{BE4BDB}
+\definecolor{darkbg}{HTML}{2D3436}
+
+\setbeamercolor{frametitle}{bg=darkbg, fg=white}
+\setbeamercolor{title}{bg=darkbg, fg=white}
+\setbeamercolor{block title}{bg=accent, fg=white}
+\setbeamertemplate{navigation symbols}{}
+
+% --- TikZ стили (вне фреймов, чтобы # работал) ---
+\tikzset{
+    arr/.style={-{Stealth[length=2mm]}, thick, gray!70},
+    darr/.style={-{Stealth[length=2mm]}, thick, dashed, gray!50},
+    baccent/.style={draw, rounded corners, minimum height=0.8cm, minimum width=2cm, font=\small, fill=accent!15, draw=accent!60, align=center},
+    bwarn/.style={draw, rounded corners, minimum height=0.8cm, minimum width=2cm, font=\small, fill=warn!15, draw=warn!60, align=center},
+    bok/.style={draw, rounded corners, minimum height=0.8cm, minimum width=2cm, font=\small, fill=ok!15, draw=ok!60, align=center},
+    bdanger/.style={draw, rounded corners, minimum height=0.8cm, minimum width=2cm, font=\small, fill=danger!15, draw=danger!60, align=center},
+    bpurple/.style={draw, rounded corners, minimum height=0.8cm, minimum width=2cm, font=\small, fill=purple!15, draw=purple!60, align=center},
+    saccent/.style={draw, rounded corners=3pt, minimum height=0.65cm, minimum width=1.7cm, font=\scriptsize, fill=accent!15, draw=accent!50, text width=1.5cm, align=center},
+    swarn/.style={draw, rounded corners=3pt, minimum height=0.65cm, minimum width=1.7cm, font=\scriptsize, fill=warn!15, draw=warn!50, text width=1.5cm, align=center},
+    sok/.style={draw, rounded corners=3pt, minimum height=0.65cm, minimum width=1.7cm, font=\scriptsize, fill=ok!15, draw=ok!50, text width=1.5cm, align=center},
+    sdanger/.style={draw, rounded corners=3pt, minimum height=0.65cm, minimum width=1.7cm, font=\scriptsize, fill=danger!15, draw=danger!50, text width=1.5cm, align=center},
+    spurple/.style={draw, rounded corners=3pt, minimum height=0.65cm, minimum width=1.7cm, font=\scriptsize, fill=purple!15, draw=purple!50, text width=1.5cm, align=center},
+    dbstyle/.style={cylinder, shape border rotate=90, draw=gray!60, fill=gray!10, minimum height=0.9cm, minimum width=1.6cm, font=\small, align=center, aspect=0.3},
+    dbpurple/.style={cylinder, shape border rotate=90, draw=purple!60, fill=purple!15, minimum height=0.9cm, minimum width=1.6cm, font=\small, align=center, aspect=0.3},
+    cloudstyle/.style={cloud, cloud puffs=10, cloud puff arc=120, draw=danger!50, fill=danger!8, minimum width=2.2cm, minimum height=0.9cm, font=\small, align=center},
+    cloudwarn/.style={cloud, cloud puffs=10, cloud puff arc=120, draw=warn!50, fill=warn!8, minimum width=2.8cm, minimum height=0.9cm, font=\scriptsize, align=center},
+    docstyle/.style={tape, draw=ok!60, fill=ok!15, minimum height=0.9cm, minimum width=1.8cm, font=\small, align=center, tape bend top=none},
+}
+
+\title{n9n Workflow Editor}
+\subtitle{AI-конструктор агентов с экспортом в код}
+\date{2026}
+
+\begin{document}
+
+% ===== ТИТУЛ =====
+\begin{frame}
+\titlepage
+\end{frame}
+
+% ===== БЛОК 1: n8n — история =====
+\begin{frame}{Что такое n8n}
+\begin{columns}[T]
+\begin{column}{0.5\textwidth}
+\textbf{Факты}
+\begin{itemize}
+    \item 2019 --- Jan Oberhauser, Берлин
+    \item n8n = \textbf{nodemation} (node + automation)
+    \item Open-source, self-hosted
+    \item Визуальная автоматизация без кода
+    \item Альтернатива Zapier / Make
+\end{itemize}
+\end{column}
+\begin{column}{0.5\textwidth}
+\textbf{Рост после AI-бума}
+\begin{itemize}
+    \item 147K+ звёзд GitHub
+    \item 200K+ пользователей
+    \item AI-ноды: Agent, LangChain, OpenAI
+    \item Выручка $\times$5 после AI-пивота
+    \item Series C --- \$180M, оценка \$2.5B
+\end{itemize}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ===== БЛОК 2: Архитектура n8n =====
+\begin{frame}{Архитектура n8n --- Single Mode}
+\centering
+\begin{tikzpicture}[node distance=0.5cm and 0.8cm]
+    \node[baccent] (ui) {Editor UI};
+    \node[baccent, right=of ui] (api) {REST API};
+    \node[baccent, right=of api] (sched) {Scheduler};
+    \node[bwarn, below=0.7cm of api] (engine) {Execution Engine};
+    \node[bpurple, below=0.7cm of engine] (nodes) {Node System (400+)};
+
+    \node[draw=gray, dashed, rounded corners, fit=(ui)(api)(sched)(engine)(nodes), inner sep=0.3cm, label={[font=\footnotesize, gray]above:Один процесс Node.js}] {};
+
+    \node[dbstyle, right=3.1cm of engine] (db) {SQLite / PG};
+    \node[bdanger, right=2.7cm of nodes] (ext) {Внешние API};
+
+    \draw[arr] (ui) -- (api);
+    \draw[arr] (api) -- (engine);
+    \draw[arr] (sched) |- (engine);
+    \draw[arr] (engine) -- (nodes);
+    \draw[arr] (engine) -- (db);
+    \draw[arr] (nodes) -- (ext);
+\end{tikzpicture}
+\end{frame}
+
+% ===== Проблемы n8n =====
+\begin{frame}{Проблемы n8n под нагрузкой}
+\centering
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{>{\bfseries\color{danger}}l l}
+\toprule
+Проблема & Суть \\
+\midrule
+Однопоточность & Тяжёлая нода блокирует всё, включая UI \\
+Sequential & Ноды --- последовательно, не параллельно \\
+Один процесс & UI + scheduler + engine делят ресурсы \\
+31\% failures & 10 вебхуков $\rightarrow$ треть запросов падает \\
+Масштабирование & Queue Mode + Redis + K8s --- отдельная задача \\
+\bottomrule
+\end{tabular}
+\end{frame}
+
+% ===== Queue Mode =====
+\begin{frame}{n8n Queue Mode --- масштабирование}
+\centering
+\begin{tikzpicture}[node distance=0.6cm and 1.5cm]
+    \node[baccent] (main) {Main Instance};
+    \node[dbstyle, right=of main, fill=warn!15, draw=warn!60] (redis) {Redis};
+    \node[bok, right=of redis, yshift=1.1cm] (w1) {Worker 1};
+    \node[bok, right=of redis, yshift=0.0cm] (w2) {Worker 2};
+    \node[font=\large, gray, right=of redis, yshift=-0.7cm] (dots) {\dots};
+    \node[bok, right=of redis, yshift=-1.4cm] (w3) {Worker N};
+    \node[dbpurple, right=of w2] (db) {PostgreSQL};
+
+    \draw[arr] (main) -- (redis);
+    \draw[arr] (redis) -- (w1);
+    \draw[arr] (redis) -- (w2);
+    \draw[arr] (redis) -- (w3);
+    \draw[arr] (w1) -- (db);
+    \draw[arr] (w2) -- (db);
+    \draw[arr] (w3) -- (db);
+\end{tikzpicture}
+
+\vspace{0.5cm}
+\textcolor{gray}{Решает проблемы, но это уже \textbf{инфраструктурная задача} --- далеко от <<no-code>>}
+\end{frame}
+
+% ===== БЛОК 3: Т-Банк =====
+\begin{frame}{Т-Банк и <<эмализация>>}
+\begin{itemize}
+    \item 10\,000+ IT-специалистов, собственный AI-центр
+    \item \textbf{<<Эмализация>>} --- внедрение AI во все отделы
+    \item Популярная задача --- \textbf{создание нейроагента}
+    \item За задачу часто берутся начинающие аналитики
+    \item Используют корпоративный self-hosted n8n
+\end{itemize}
+\end{frame}
+
+% ===== Пайплайн создания агента =====
+\begin{frame}{Пайплайн создания агента сейчас}
+\centering
+\begin{tikzpicture}[node distance=0.15cm]
+    \node[saccent] (a1) {Аналитик\\получает задачу};
+    \node[saccent, right=of a1] (a2) {Читает\\доки n8n};
+    \node[saccent, right=of a2] (a3) {Собирает\\из нод};
+    \node[sok, right=of a3] (a4) {Тестирует};
+    \node[sdanger, right=of a4] (a5) {Нагрузка\\растёт};
+    \node[swarn, right=of a5] (a6) {Разработчик\\переписывает};
+    \node[sok, right=of a6] (a7) {Деплой};
+
+    \draw[arr] (a1) -- (a2);
+    \draw[arr] (a2) -- (a3);
+    \draw[arr] (a3) -- (a4);
+    \draw[arr] (a4) -- (a5);
+    \draw[arr] (a5) -- (a6);
+    \draw[arr] (a6) -- (a7);
+\end{tikzpicture}
+
+\vspace{0.5cm}
+\begin{columns}[T]
+\begin{column}{0.5\textwidth}
+\textcolor{danger}{\textbf{Проблемы:}}
+\begin{itemize}\small
+    \item Аналитик тратит время на доки
+    \item Перенос в код --- ручная работа
+    \item Нужен второй человек
+\end{itemize}
+\end{column}
+\begin{column}{0.5\textwidth}
+\textcolor{danger}{\textbf{Итого:}}
+\begin{itemize}\small
+    \item \textbf{$\sim$1 месяц}
+    \item \textbf{2 человека}
+    \item Куча ручной работы
+\end{itemize}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ===== БЛОК 3.5: Все агенты одинаковы =====
+\begin{frame}{Все агенты устроены одинаково}
+\centering
+\begin{tikzpicture}[node distance=1.5cm]
+    \node[baccent, minimum width=2.2cm] (in) {Вход\\{\scriptsize сообщение / вебхук}};
+    \node[docstyle, above right=0.5cm and 1.5cm of in, minimum width=2.2cm] (ctx) {Контекст\\{\scriptsize база знаний / API}};
+    \node[bpurple, right=2.5cm of in, minimum width=2.2cm] (llm) {LLM\\{\scriptsize модель + промпт}};
+    \node[bwarn, right=2.5cm of llm, minimum width=2.2cm] (out) {Выход\\{\scriptsize ответ / API}};
+
+    \draw[arr] (in) -- (llm);
+    \draw[darr] (ctx) -- (llm);
+    \draw[arr] (llm) -- (out);
+\end{tikzpicture}
+
+\vspace{0.3cm}
+\renewcommand{\arraystretch}{1.15}
+\small
+\begin{tabular}{llll}
+\toprule
+\textbf{Агент} & \textbf{Контекст} & \textbf{Промпт} & \textbf{Выход} \\
+\midrule
+Саппорт-бот & FAQ, доки & <<Оператор поддержки>> & Чат \\
+HR-ассистент & Регламенты & <<HR-консультант>> & Мессенджер \\
+Аналитик & SQL, дашборды & <<Data-аналитик>> & Отчёт \\
+Code-reviewer & Стайлгайд & <<Ревьюер кода>> & PR \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.2cm}
+\textcolor{gray}{\small Одна архитектура $\rightarrow$ можно \textbf{стандартизировать}, \textbf{генерировать} и \textbf{конвертировать в код}}
+\end{frame}
+
+% ===== БЛОК 4: Архитектура n9n =====
+\begin{frame}{n9n --- архитектура}
+\centering
+\begin{tikzpicture}[node distance=0.35cm and 0.5cm]
+    \node[spurple, minimum width=2cm] (land) {Landing\\+ Chat};
+    \node[spurple, right=of land, minimum width=2cm] (editor) {Flow Editor};
+    \node[spurple, right=of editor, minimum width=2cm] (export_ui) {Export + Bot};
+
+    \node[draw=purple!40, dashed, rounded corners, fit=(land)(editor)(export_ui), inner sep=0.25cm, label={[font=\scriptsize, purple]above:Frontend (React + Vite)}] {};
+
+    \node[saccent, below=1.3cm of land, minimum width=1.7cm] (chat) {chat};
+    \node[saccent, right=of chat, minimum width=1.7cm] (gen) {generate};
+    \node[saccent, right=of gen, minimum width=1.7cm] (exec) {run};
+    \node[saccent, right=of exec, minimum width=1.7cm] (exp) {export};
+    \node[saccent, right=of exp, minimum width=1.7cm] (bot) {run-bot};
+
+    \node[draw=accent!40, dashed, rounded corners, fit=(chat)(gen)(exec)(exp)(bot), inner sep=0.25cm, label={[font=\scriptsize, accent]below:Backend (FastAPI)}] {};
+
+    \node[swarn, below=1.3cm of exec, minimum width=3cm] (llm) {DeepSeek / OpenAI / Ollama};
+
+    \draw[arr] (land) -- (chat);
+    \draw[arr] (land) -- (gen);
+    \draw[arr] (editor) -- (exec);
+    \draw[arr] (editor) -- (exp);
+    \draw[arr] (export_ui) -- (bot);
+    \draw[darr] (gen) -- (llm);
+    \draw[darr] (exec) -- (llm);
+    \draw[darr] (chat) -- (llm);
+\end{tikzpicture}
+\end{frame}
+
+% ===== Пайплайн n9n =====
+\begin{frame}{Пайплайн создания агента в n9n}
+\centering
+\begin{tikzpicture}[node distance=0.2cm]
+    \node[saccent, minimum width=1.8cm] (s1) {Описал задачу\\в чате};
+    \node[saccent, right=of s1, minimum width=1.8cm] (s2) {AI генерирует\\workflow};
+    \node[saccent, right=of s2, minimum width=1.8cm] (s3) {Правки\\чат / визуально};
+    \node[sok, right=of s3, minimum width=1.8cm] (s4) {Тест в\\интерфейсе};
+    \node[sok, right=of s4, minimum width=1.8cm] (s5) {Export\\Python + Docker};
+    \node[sok, right=of s5, minimum width=1.8cm] (s6) {Деплой};
+
+    \draw[arr] (s1) -- (s2);
+    \draw[arr] (s2) -- (s3);
+    \draw[arr] (s3) -- (s4);
+    \draw[arr] (s4) -- (s5);
+    \draw[arr] (s5) -- (s6);
+\end{tikzpicture}
+
+\vspace{0.5cm}
+\begin{columns}[T]
+\begin{column}{0.5\textwidth}
+\textcolor{ok}{\textbf{Результат:}}
+\begin{itemize}\small
+    \item \textbf{Минуты--часы} вместо месяца
+    \item \textbf{1 человек} вместо двух
+    \item Код генерируется автоматически
+\end{itemize}
+\end{column}
+\begin{column}{0.5\textwidth}
+\textcolor{ok}{\textbf{На выходе:}}
+\begin{itemize}\small
+    \item \texttt{main.py} --- Telegram-бот
+    \item \texttt{workflow.py} --- логика агента
+    \item \texttt{Dockerfile} --- контейнер
+    \item \texttt{requirements.txt}
+\end{itemize}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ===== Типы нод =====
+\begin{frame}{Типы нод}
+\centering
+\begin{tikzpicture}[node distance=1cm and 1.8cm]
+    \node[baccent, minimum width=1.8cm] (trig) {Trigger};
+    \node[bwarn, right=of trig, yshift=0.6cm, minimum width=1.8cm] (http) {HTTP};
+    \node[bdanger, right=of trig, yshift=-0.6cm, minimum width=1.8cm] (cond) {Condition};
+    \node[bpurple, right=of http, yshift=-0.6cm, minimum width=1.8cm] (agent) {Agent};
+    \node[docstyle, above=0.6cm of agent, minimum width=1.8cm] (know) {Knowledge};
+
+    \draw[arr] (trig) -- (http);
+    \draw[arr] (trig) -- (cond);
+    \draw[arr] (http) -- (agent);
+    \draw[arr] (cond) -- (agent);
+    \draw[darr] (know) -- node[right, font=\scriptsize, gray]{context} (agent);
+\end{tikzpicture}
+
+\vspace{0.4cm}
+\small
+\begin{tabular}{ll}
+\toprule
+\textbf{Нода} & \textbf{Назначение} \\
+\midrule
+\textcolor{accent}{Trigger} & Точка входа (manual, webhook) \\
+\textcolor{warn}{HTTP} & Вызов внешнего API \\
+\textcolor{danger}{Condition} & Проверка (empty, not\_empty, contains) \\
+\textcolor{ok}{Knowledge} & RAG-контекст (документы, URL) \\
+\textcolor{purple}{Agent} & LLM-вызов (DeepSeek, OpenAI, Ollama) \\
+\bottomrule
+\end{tabular}
+\end{frame}
+
+% ===== Сравнение =====
+\begin{frame}{n8n vs n9n}
+\centering
+\renewcommand{\arraystretch}{1.4}
+\small
+\begin{tabular}{l c c}
+\toprule
+& \textbf{n8n} & \textbf{n9n (наш)} \\
+\midrule
+Создание & Руками + доки & AI генерирует \\
+Редактирование & Drag \& drop & Чат + визуально \\
+Масштабирование & Queue Mode, K8s & Export $\rightarrow$ Python + Docker \\
+Перенос в код & Ручной, разработчик & Автоматический \\
+Людей & 2 (аналитик + dev) & 1 (аналитик) \\
+Время & $\sim$1 месяц & Минуты--часы \\
+Запуск бота & Внешний деплой & Одна кнопка \\
+\bottomrule
+\end{tabular}
+\end{frame}
+
+% ===== БЛОК 5: Будущее =====
+\begin{frame}{Что дальше}
+\begin{columns}[T]
+\begin{column}{0.5\textwidth}
+\textbf{\textcolor{accent}{Ближайшее}}
+\begin{itemize}\small
+    \item Новые ноды: database, transform, loop
+    \item Визуальный дебаггер
+    \item Шаблоны workflow
+    \item История версий
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{\textcolor{purple}{Продвинутое}}
+\begin{itemize}\small
+    \item Multi-agent orchestration
+    \item RAG-пайплайн (chunking + vector store)
+    \item Memory / контекст диалога
+    \item Мониторинг (latency, tokens, ошибки)
+\end{itemize}
+\end{column}
+\begin{column}{0.5\textwidth}
+\textbf{\textcolor{ok}{Инфраструктура}}
+\begin{itemize}\small
+    \item One-click deploy (Railway, VPS)
+    \item CI/CD-интеграция
+    \item Persistent storage (PostgreSQL)
+    \item Auth, multi-user
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{\textcolor{warn}{Интеграции}}
+\begin{itemize}\small
+    \item MCP (Model Context Protocol)
+    \item Jira, Confluence, Slack, Bitrix24
+    \item GigaChat, YandexGPT, T-lite
+\end{itemize}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ===== ИТОГ =====
+\begin{frame}{Итог}
+\centering
+\vspace{0.4cm}
+{\normalsize Мы не решаем одну конкретную боль и не автоматизируем одну рутину.}
+
+\vspace{0.5cm}
+{\large\bfseries Мы даём \textcolor{accent}{полноценный инструмент},\\[0.2cm]
+с помощью которого можно автоматизировать\\[0.15cm]
+\textcolor{accent}{тысячи задач} --- быстро и без боли\\[0.15cm]
+встроить в IT-ландшафт предприятия любого размера.}
+\end{frame}
+
+\end{document}
